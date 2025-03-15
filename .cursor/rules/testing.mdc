@@ -1,0 +1,178 @@
+---
+description: Testing Guidelines for TypeScript Library
+globs: test/**, src/**/*.test.ts
+alwaysApply: false
+---
+---
+description: Testing Guidelines for TypeScript Library
+globs: test/**, src/**/*.test.ts
+---
+
+# Testing Guidelines
+
+These rules provide guidance for implementing and maintaining tests for this TypeScript library project.
+
+## Testing Framework
+
+- Maintain Vitest as the testing framework
+- Follow the existing test patterns using Vitest
+- Use describe/it pattern for test organization
+- Implement proper assertions with expect statements
+- Don't skip tests unless explicitly instructed
+- Use Vitest's built-in mocking capabilities
+- Leverage test hooks (beforeEach, afterEach) appropriately
+- Follow the established patterns for async tests
+
+## Test Organization
+
+- Group related tests in appropriate `describe` blocks
+- Name tests descriptively to document behavior
+- Keep test files focused on specific functionality
+- Maintain separation between unit and integration tests
+- Use appropriate setup and teardown functions
+- Follow existing test organization patterns
+- Use nested describes for related test groups
+- Name test files consistently with implementation files
+
+## Test Coverage
+
+- Aim for comprehensive test coverage of all public APIs
+- Test both success and error paths
+- Include edge case testing
+- Use mocks and stubs appropriately for external dependencies
+- Verify type correctness in tests when appropriate
+- Maintain existing test patterns for consistency
+- Test boundary conditions and error scenarios
+- Don't sacrifice quality for coverage percentage
+
+## Unit Testing
+
+- Write tests for all new functionality
+- Keep unit tests focused on a single unit of work
+- Mock external dependencies in unit tests
+- Test functions in isolation
+- Verify correct behavior, not implementation details
+- Use appropriate test doubles (mocks, stubs, spies)
+- Write deterministic tests that don't depend on environment
+- Keep unit tests fast and focused
+
+## Integration Testing
+
+- Test interaction between components
+- Minimize mocking in integration tests
+- Verify correct component communication
+- Test complete features or workflows
+- Use realistic data in integration tests
+- Focus on component boundaries
+- Test error handling between components
+- Verify correct end-to-end behavior
+
+## Test Data Management
+
+- Use fixtures for consistent test data
+- Keep test data close to the tests that use it
+- Use factory functions to create test data
+- Avoid hard-coded magic values in tests
+- Use realistic data structures in tests
+- Maintain immutability of test data
+- Create helpers for common test data setup
+- Don't share mutable state between tests
+
+## Mocking Strategy
+
+- Mock external dependencies, not internal implementation
+- Use consistent mocking patterns
+- Reset mocks between tests
+- Mock at the appropriate level of abstraction
+- Verify mock interactions when behavior depends on them
+- Don't mock what you don't own when possible
+- Create reusable mock factories for common dependencies
+- Document complex mock setup
+
+## Test Quality
+
+- Write clear, readable tests
+- Avoid test interdependence
+- Maintain consistent test patterns
+- Keep tests simple and focused
+- Avoid conditional logic in tests
+- Write deterministic tests
+- Don't test configuration
+- Refactor tests when they become complex
+
+## Asynchronous Testing
+
+- Use async/await for asynchronous tests
+- Properly handle promises in tests
+- Use appropriate timeouts for async operations
+- Test both resolution and rejection paths
+- Avoid setTimeout in tests when possible
+- Use Vitest's built-in async utilities
+- Ensure proper cleanup of async resources
+- Verify correct sequencing in async operations
+
+## Testing Types
+
+- Verify type contracts where appropriate
+- Test generic functions with different type parameters
+- Ensure type safety in test utilities
+- Use type assertions sparingly in tests
+- Verify error types in rejection tests
+- Test overloaded functions with different parameter types
+- Don't sacrifice type safety in test code
+- Use TypeScript's expect-type when appropriate
+
+## Performance Testing
+
+- Focus on critical performance paths
+- Establish baselines for performance-critical functions
+- Use benchmarking for performance-sensitive code
+- Keep performance tests separate from functional tests
+- Don't block CI with long-running performance tests
+- Test performance on representative hardware when possible
+- Document performance expectations
+- Compare against previous versions in performance tests
+
+## Test Maintenance
+
+- Keep tests up-to-date with implementation changes
+- Refactor tests when refactoring code
+- Remove tests for removed functionality
+- Update expected values when behavior intentionally changes
+- Maintain consistent testing patterns
+- Keep test failures informative
+- Fix flaky tests promptly
+- Document test requirements and assumptions
+
+## Test-Driven Development
+
+- Consider writing tests before implementation
+- Define clear requirements before writing tests
+- Use tests to drive API design
+- Refine tests as requirements evolve
+- Start with simple test cases
+- Add edge cases incrementally
+- Use TDD to guide implementation
+- Focus on behavior, not implementation details
+
+## Dos
+
+- Write tests for all new functionality
+- Keep tests focused and independent
+- Test both success and error paths
+- Use descriptive test names that explain behavior
+- Maintain consistent testing patterns
+- Document complex test setups
+- Refactor tests when they become complex
+- Test boundary conditions
+
+## Don'ts
+
+- Don't write tests that depend on execution order
+- Don't use implementation details in test assertions
+- Don't write flaky or environment-dependent tests
+- Don't skip tests without clear justification
+- Don't sacrifice test readability for brevity
+- Don't use excessive mocking
+- Don't test configuration or constants
+- Don't test private implementation details

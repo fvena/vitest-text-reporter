@@ -1,0 +1,151 @@
+---
+description: Guidelines for Functional Programming in TypeScript
+globs: src/**, test/**, **/*.ts
+alwaysApply: false
+---
+# Functional Programming in TypeScript
+
+These rules provide guidelines on applying functional programming principles in the development of this TypeScript library.
+
+## Core Principles
+
+- Prefer pure functions without side effects
+- Treat data as immutable
+- Use function composition for complex operations
+- Implement higher-order functions where appropriate
+- Avoid shared mutable state
+- Separate data and behavior
+- Use recursion appropriately (with stack considerations)
+- Implement lazy evaluation when beneficial
+
+## Immutability
+
+- Use `const` by default for all declarations
+- Avoid methods that mutate data (push, pop, splice, etc.)
+- Implement copies for modifications (spread, Object.assign, etc.)
+- Use `readonly` for types that should not be modified
+- Implement immutable collections when appropriate
+- Use Readonly<T> for function parameters that should not be modified
+- Avoid mutating parameters within functions
+- Implement deep freeze for complex immutable objects
+
+## First-Class Functions
+
+- Use functions as first-class citizens
+- Pass functions as parameters when appropriate
+- Implement functions that return functions (closures)
+- Use correctly typed callbacks
+- Implement function factories for configuration
+- Avoid function calls with side effects
+- Prefer function expressions over declarations when appropriate
+- Use arrow functions to preserve context
+
+## Functional Composition
+
+- Compose small functions to create complex behaviors
+- Implement pipe and compose functions for chaining operations
+- Use currying for partially applied functions
+- Implement point-free style when it improves readability
+- Create functional adapters for imperative APIs
+- Use functional decorators to extend behavior
+- Implement staged transformations with composed functions
+- Prefer expressions over statements in functional operations
+
+## Functional Collection Handling
+
+- Use map, filter, reduce instead of imperative loops
+- Implement higher-order functions with clear signatures
+- Avoid unnecessary intermediate operations in functional chains
+- Use TypeScript to correctly type collection operations
+- Implement fold and scan for accumulations
+- Use flatMap for flattening with transformation
+- Implement zip, partition and other common functional operations
+- Preserve immutability in collection operations
+
+## Functional Types
+
+- Implement Option/Maybe types for optional values
+- Use Either/Result types for fallible operations
+- Implement monads for chained operations
+- Create functors for typed mapping operations
+- Use algebraic data types (ADTs) when appropriate
+- Implement pattern matching with discriminated unions
+- Use extensible types for functional composition
+- Implement transducer types for efficient transformations
+
+## Functional Flow Control
+
+- Use conditional expressions instead of statements
+- Implement pattern matching for complex control flows
+- Use monads to sequence operations
+- Avoid exceptions - use Result/Either types for errors
+- Implement early returns with function guards
+- Use composition for linear data flows
+- Implement tail recursion when possible
+- Prefer declarative over imperative for control flows
+
+## Functional Asynchrony
+
+- Use Promises for asynchronous operations
+- Implement async/await with functional handling
+- Create functions for promise composition
+- Use functional async operators (Promise.all, etc.)
+- Implement consistent error handling in async flows
+- Treat promises as immutable future values
+- Create combinators for complex async operations
+- Maintain consistency in async handling across the codebase
+
+## Functional Testing
+
+- Test pure functions in isolation
+- Implement property-based testing when appropriate
+- Use immutable fixtures for test data
+- Test function composition independently
+- Implement functional mocks (returning fixed values)
+- Verify absence of side effects
+- Use pure testing functions
+- Implement strategies for testing async operations
+
+## Functional Optimization
+
+- Implement memoization for expensive pure functions
+- Use lazy evaluation for costly calculations
+- Implement trampolines for safe recursion
+- Consider performance in copy operations for immutability
+- Use persistent data structures for efficient operations
+- Implement batch operations to minimize object creation
+- Optimize critical function compositions
+- Balance functional purity with performance where necessary
+
+## Interoperability
+
+- Create functional adapters for imperative APIs
+- Implement functional wrappers for external libraries
+- Maintain clear boundaries between functional and non-functional code
+- Use functional techniques with DOM/Browser APIs
+- Implement interoperability with RxJS or other functional libraries
+- Create transformers to convert between paradigms
+- Design public APIs that support functional usage
+- Maintain consistency in functional style across integrations
+
+## Dos
+
+- Prefer immutability by default
+- Compose small, focused functions
+- Use the type system to model functional domains
+- Separate side effects from pure logic
+- Implement functional error handling
+- Design for composition and reuse
+- Maintain consistency in functional style
+- Document functional patterns used
+
+## Don'ts
+
+- Don't mix functional and imperative styles inconsistently
+- Avoid operations with hidden side effects
+- Don't overcomplicate with unnecessary functional abstractions
+- Avoid premature optimization that sacrifices functional clarity
+- Don't ignore performance for dogmatic functional purity
+- Avoid recursion without considering stack limits
+- Don't force functional patterns where they provide no clear benefit
+- Avoid complex monads without adequate documentation

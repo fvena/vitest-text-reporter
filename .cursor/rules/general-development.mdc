@@ -1,0 +1,100 @@
+---
+description: General Development Guidelines
+globs: *, **/*
+alwaysApply: false
+---
+# General Development Guidelines
+
+These rules provide guidance for overall project structure, workflow, and general development practices for this TypeScript library.
+
+## Project Structure
+
+- Keep source code in the `src/` directory
+- Place tests in the `test/` directory with naming pattern `*.test.ts`
+- Use the `playground/` directory for development testing
+- Maintain documentation in the `docs/` directory
+- Don't create configuration files at root level without explicit request
+- Respect the existing directory structure
+
+## Development Workflow
+
+- Always use codebase_search to understand existing structures before making changes
+- Maintain the established project architecture and patterns
+- Follow existing naming conventions for consistency
+- Make incremental changes that are easy to review
+- Keep pull requests focused on a single concern
+- Follow existing patterns when adding new features
+- Test changes locally before submitting
+
+## Git and CI Workflow
+
+- Don't modify GitHub workflow files unless explicitly requested
+- Maintain the semantic release configuration
+- Respect the commitlint configuration for commit messages
+- Follow conventional commits pattern (feat:, fix:, etc.)
+- Don't disable or skip established CI checks
+- Preserve the Husky git hooks configuration
+- Use meaningful commit messages that describe the change
+
+## Versioning and Release
+
+- Follow semantic versioning principles
+- Let semantic-release handle version updates
+- Use appropriate commit types to trigger correct version changes:
+  - `fix:` for patch releases (0.0.x)
+  - `feat:` for minor releases (0.x.0)
+  - `feat:` with breaking change notation for major releases (x.0.0)
+- Don't manually update version numbers in package.json
+- Include breaking changes notation when applicable
+- Document breaking changes thoroughly
+
+## Code Organization
+
+- Structure code by features or domains
+- Group related functionality together
+- Keep files focused on a single responsibility
+- Follow established patterns for file and folder organization
+- Use consistent naming patterns for similar files/components
+- Maintain clear separation between public API and implementation details
+- Avoid circular dependencies at all costs
+
+## Auth0 Development Rules
+
+- Always use the official Auth0 SPA SDK
+- Never store sensitive auth data in localStorage
+- Use Auth0's built-in methods for authentication
+- Handle authentication state properly
+- Implement proper error handling for auth operations
+- Always handle redirect callbacks correctly
+- Use environment variables for Auth0 configuration
+- Follow secure authentication practices
+
+## Collaboration Practices
+
+- Respect existing code styles and patterns
+- Add appropriate comments for complex logic
+- Seek feedback on architectural decisions
+- Document design decisions for complex features
+- Keep discussions focused on code, not preferences
+- Address feedback in a timely manner
+- Be mindful of dependencies and their impact
+
+## Dos
+
+- Use existing patterns consistently
+- Follow established project conventions
+- Make incremental, focused changes
+- Test thoroughly before submission
+- Ask questions when architecture is unclear
+- Document architectural decisions
+- Maintain backward compatibility when possible
+
+## Don'ts
+
+- Don't create unnecessary files or structures
+- Don't modify core configuration without explicit request
+- Don't change established patterns without justification
+- Don't break backward compatibility without version change
+- Don't commit untested code
+- Don't ignore project conventions
+- Don't submit large, unfocused pull requests

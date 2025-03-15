@@ -1,0 +1,96 @@
+{
+  "name": "typescript-library-template-pro",
+  "version": "0.1.0",
+  "description": "A simple, professional, and modern template for building and maintaining TypeScript libraries. This template integrates the best tools, workflows, and practices to help you focus on developing your library without worrying about setup.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "workspaces": [
+    "playground"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky",
+    "semantic-release": "semantic-release",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "playground": "npm run dev --workspace=playground",
+    "size": "size-limit"
+  },
+  "lint-staged": {
+    "*": "prettier -w --ignore-unknown",
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
+  },
+  "keywords": [
+    "typescript",
+    "starter",
+    "library",
+    "template"
+  ],
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "10 kB"
+    },
+    {
+      "path": "dist/index.cjs",
+      "limit": "10 kB"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/fvena/typescript-library-template-pro#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fvena/typescript-library-template-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fvena/typescript-library-template-pro/issues"
+  },
+  "author": "Francisco Vena <fvena32@gmail.com> (https://www.fvena.com)",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@size-limit/preset-small-lib": "^11.2.0",
+    "@swc/core": "^1.11.9",
+    "@vitest/coverage-v8": "^3.0.8",
+    "@vitest/ui": "^3.0.8",
+    "eslint": "^9.22.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "personal-style-guide": "^0.6.0",
+    "prettier": "^3.5.3",
+    "semantic-release": "^24.2.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
+    "unplugin-swc": "^1.5.1",
+    "vitepress": "^1.6.3",
+    "vitest": "^3.0.8"
+  }
+}

@@ -1,0 +1,139 @@
+---
+description: Documentation Guidelines for TypeScript Library
+globs: docs/**, **/*.md, src/**/*.ts
+alwaysApply: false
+---
+# Documentation Guidelines
+
+These rules provide guidance for creating and maintaining documentation for this TypeScript library project.
+
+## Documentation Structure
+
+- Maintain VitePress structure in the `docs/` directory
+- Keep navigation organized in `.vitepress/config.ts`
+- Place general documentation in the root of `docs/`
+- Use subdirectories for organizing related documentation topics
+- Follow existing documentation format and style for consistency
+- Update table of contents when adding new documentation pages
+- Maintain clear separation between API docs and guides
+
+## API Documentation
+
+- Document all exported functions, classes, and types with JSDoc
+- Include parameter descriptions, return types, and examples
+- Maintain consistent JSDoc format throughout the codebase
+- Use `@example` tags to show usage examples in documentation
+- Include type information in all documentation
+- Document potential errors and edge cases
+- Describe function behavior clearly and concisely
+- Document side effects where they exist
+
+## Code Documentation
+
+- Document all public interfaces with JSDoc
+- Include examples in documentation for complex APIs
+- Add implementation notes for complex algorithms
+- Explain non-obvious design decisions
+- Document side effects and potential errors
+- Keep type documentation up-to-date
+- Include references to specific patterns or techniques used
+- Provide context for non-obvious optimizations
+
+## Markdown Standards
+
+- Use proper markdown headings and hierarchy
+- Include code examples with syntax highlighting
+- Maintain a consistent writing style throughout documentation
+- Use tables for structured information when appropriate
+- Include proper cross-references between documentation pages
+- Keep documentation up-to-date with code changes
+- Use lists for steps or related items
+- Format code with appropriate language highlighting
+
+## VitePress Configuration
+
+- Don't modify the VitePress theme without explicit request
+- Update sidebar navigation when adding new documentation
+- Maintain proper site metadata in config
+- Set appropriate base URL for GitHub Pages deployment
+- Preserve existing documentation features and components
+- Keep theme configuration consistent
+- Update navigation links when adding new content
+- Maintain proper content organization in the sidebar
+
+## README Maintenance
+
+- Keep README up-to-date with project changes
+- Maintain clear installation and usage instructions
+- Update features list when adding new functionality
+- Keep badges and status indicators current
+- Maintain proper documentation links
+- Include basic getting started information
+- Provide clear contribution guidelines
+- Keep license information up-to-date
+
+## Examples
+
+- Provide clear, runnable examples in documentation
+- Maintain the playground for interactive examples
+- Ensure examples demonstrate practical use cases
+- Update examples when APIs change
+- Include both simple and advanced examples
+- Provide context and explanation for examples
+- Use realistic scenarios in examples
+- Ensure examples follow best practices
+
+## Changelog
+
+- Don't manually update the CHANGELOG.md file
+- Let semantic-release handle changelog generation
+- Ensure commit messages follow conventional commits format
+- Use appropriate commit types to categorize changes
+- Include breaking changes notation when applicable
+- Reference issues in commit messages when relevant
+- Use clear, descriptive messages that explain the change
+- Follow the established changelog format
+
+## Documentation Style
+
+- Use consistent terminology throughout documentation
+- Keep language clear and concise
+- Use active voice when possible
+- Define technical terms when first used
+- Maintain a professional, helpful tone
+- Use consistent formatting for similar content
+- Include diagrams for complex concepts when helpful
+- Break large documents into logical sections
+
+## Documentation Updates
+
+- Update documentation when changing public APIs
+- Keep documentation in sync with code changes
+- Remove documentation for deprecated features
+- Mark experimental features clearly
+- Document breaking changes thoroughly
+- Update version-specific documentation
+- Maintain documentation of previous versions when needed
+- Check for broken links when updating documentation
+
+## Dos
+
+- Keep documentation in sync with code changes
+- Follow existing documentation patterns
+- Use markdown features effectively
+- Include practical examples
+- Maintain clear API documentation
+- Document both function signatures and behavior
+- Provide migration guides for breaking changes
+- Use consistent terminology
+
+## Don'ts
+
+- Don't skip documentation for public APIs
+- Don't leave outdated documentation in place
+- Don't change VitePress configuration without reason
+- Don't use inconsistent formatting or styles
+- Don't use overly complex language
+- Don't duplicate information unnecessarily
+- Don't include implementation details that may change
+- Don't mix different documentation styles

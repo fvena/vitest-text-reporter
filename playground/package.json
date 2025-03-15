@@ -1,0 +1,16 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts"
+  },
+  "dependencies": {
+    "typescript-library-template-pro": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.6.2",
+    "typescript": "^5.8.2"
+  }
+}
