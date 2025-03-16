@@ -1,5 +1,4 @@
-import type { Reporter, TestModule } from "vitest/node";
-import type { RunnerTaskResultPack } from "vitest";
+import type { Reporter, TestCase, TestModule } from "vitest/node";
 
 type TestState = "fail" | "pass" | "pending";
 
@@ -109,32 +108,28 @@ export default class CustomReporter implements Reporter {
     }
   }
 
-  onTaskUpdate(packs: RunnerTaskResultPack[]): void {
-    for (const pack of packs) {
-      const id = pack[0];
-      const result = pack[1];
+  onTestCaseResult = (testCase: TestCase): void => {
+    const result = testCase.result();
+    if (this.tests.has(testCase.id)) {
+      const testInfo = this.tests.get(testCase.id);
+      if (!testInfo) return;
+      const oldState = testInfo.state;
+      let newState: TestState = oldState;
 
-      if (result && this.tests.has(id)) {
-        const testInfo = this.tests.get(id);
-        if (!testInfo) return;
-        const oldState = testInfo.state;
-        let newState: TestState = oldState;
+      if (result.state === "passed") {
+        newState = "pass";
+      } else if (result.state === "failed") {
+        newState = "fail";
+      }
 
-        if (result.state === "pass") {
-          newState = "pass";
-        } else if (result.state === "fail") {
-          newState = "fail";
-        }
-
-        // Solo actualizamos si el estado cambió
-        if (newState !== oldState) {
-          this.updateTestState(id, testInfo, newState);
-        }
+      // Solo actualizamos si el estado cambió
+      if (newState !== oldState) {
+        this.updateTestState(testCase.id, testInfo, newState);
       }
     }
 
     this.updateProgress();
-  }
+  };
 
   /**
    * Actualiza el estado de un test y los contadores del archivo
@@ -186,7 +181,7 @@ export default class CustomReporter implements Reporter {
     testInfo.state = newState;
   }
 
-  onFinished(): void {
+  onTestRunEnd(): void {
     const totalTime = (Date.now() - this.startTime) / 1000;
     this.displaySummary(totalTime);
 
