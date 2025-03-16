@@ -17,19 +17,23 @@ import colors from "yoctocolors";
  */
 function format(template: string, data: TemplateData): string {
   // eslint-disable-next-line security/detect-unsafe-regex -- This is a valid regex
-  return template.replaceAll(/\{(\w+)(?::(\w+))?\}/g, (match, key: string, color?: string) => {
+  return template.replaceAll(/\{(\w+)(?::([.\w]+))?\}/g, (match, key: string, styles?: string) => {
     if (data[key] === undefined) {
       return match;
     }
 
-    const value = String(data[key]);
+    let value = String(data[key]);
 
-    if (!color) {
+    if (!styles) {
       return value;
     }
 
-    if (colorExists(color)) {
-      return applyColor(value, color);
+    // Apply each style in sequence
+    const styleList = styles.split(".");
+    for (const style of styleList) {
+      if (colorExists(style)) {
+        value = applyColor(value, style);
+      }
     }
 
     return value;

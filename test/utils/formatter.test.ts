@@ -5,7 +5,11 @@ import Formatter from "../../src/utils/formatter";
 describe("Formatter", () => {
   const greenColorStart = "\u001B[32m";
   const redColorStart = "\u001B[31m";
+  const boldStart = "\u001B[1m";
+  const underlineStart = "\u001B[4m";
   const colorEnd = "\u001B[39m";
+  const boldEnd = "\u001B[22m";
+  const underlineEnd = "\u001B[24m";
 
   describe("format", () => {
     const baseData: TemplateData = {
@@ -78,6 +82,36 @@ describe("Formatter", () => {
       const data = { ...baseData, value: "test" };
       const result = Formatter.format(template, data);
       expect(result).toBe("Plain text without variables");
+    });
+
+    it("should handle multiple styles with dot notation", () => {
+      const template = "Tests: {passed:bold.green} passed, {failed:underline.red} failed";
+      const data = { ...baseData, failed: 2, passed: 5 };
+      const result = Formatter.format(template, data);
+      expect(result).toBe(
+        `Tests: ${greenColorStart}${boldStart}5${boldEnd}${colorEnd} passed, ${redColorStart}${underlineStart}2${underlineEnd}${colorEnd} failed`,
+      );
+    });
+
+    it("should handle multiple styles in different order", () => {
+      const template = "Tests: {passed:green.bold} passed, {failed:red.underline} failed";
+      const data = { ...baseData, failed: 2, passed: 5 };
+      const result = Formatter.format(template, data);
+
+      // The result should match one of these two valid combinations
+      const validResults = [
+        `Tests: ${boldStart}${greenColorStart}5${colorEnd}${boldEnd} passed, ${underlineStart}${redColorStart}2${colorEnd}${underlineEnd} failed`,
+        `Tests: ${greenColorStart}${boldStart}5${boldEnd}${colorEnd} passed, ${redColorStart}${underlineStart}2${underlineEnd}${colorEnd} failed`,
+      ];
+
+      expect(validResults).toContain(result);
+    });
+
+    it("should ignore invalid styles in dot notation", () => {
+      const template = "Value: {value:bold.invalidcolor}";
+      const data = { ...baseData, value: "test" };
+      const result = Formatter.format(template, data);
+      expect(result).toBe(`Value: ${boldStart}test${boldEnd}`);
     });
   });
 });
