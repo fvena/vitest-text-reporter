@@ -131,6 +131,7 @@ export class Tracker {
 
     if (end) {
       data.endTime = Date.now();
+      data.totalTime = Math.round((data.endTime - this.startTime) / 1000); // seconds
     }
 
     return data;

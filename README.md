@@ -110,6 +110,7 @@ You can use the following variables in your templates:
 - `startTime`: Timestamp when test run started
 - `endTime`: Timestamp when test run completed (only in `end` template)
 - `timestamp`: Current timestamp
+- `totalTime`: Total time taken for the test run in seconds (only available when tests are completed)
 
 ## 🎨 Color Formatting
 

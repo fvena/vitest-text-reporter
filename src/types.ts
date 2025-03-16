@@ -41,6 +41,7 @@ export interface TimeData {
   endTime?: number;
   startTime: number;
   timestamp: number;
+  totalTime?: number;
 }
 
 export type TemplateData = FileStatsResult & Record<string, number | string> & TestStats & TimeData;

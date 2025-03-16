@@ -165,16 +165,22 @@ describe("Tracker", () => {
       expect(stats.timestamp).toBeLessThanOrEqual(Date.now());
     });
 
-    it("should include endTime when end parameter is true", () => {
+    it("should include endTime and totalTime when end parameter is true", () => {
       const stats = tracker.getStats(true);
       expect(stats.endTime).toBeDefined();
       expect(stats.endTime).toBeLessThanOrEqual(Date.now());
       expect(stats.endTime).toBeGreaterThanOrEqual(stats.startTime);
+      expect(stats.totalTime).toBeDefined();
+      if (stats.endTime === undefined) {
+        throw new Error("endTime should be defined when end parameter is true");
+      }
+      expect(stats.totalTime).toBe(Math.round((stats.endTime - stats.startTime) / 1000));
     });
 
-    it("should not include endTime when end parameter is false", () => {
+    it("should not include endTime or totalTime when end parameter is false", () => {
       const stats = tracker.getStats(false);
       expect(stats.endTime).toBeUndefined();
+      expect(stats.totalTime).toBeUndefined();
     });
   });
 
