@@ -92,5 +92,8 @@
     "unplugin-swc": "^1.5.1",
     "vitepress": "^1.6.3",
     "vitest": "^3.0.8"
+  },
+  "dependencies": {
+    "yoctocolors": "^2.1.1"
   }
 }

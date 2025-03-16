@@ -19,17 +19,16 @@ export default defineConfig({
     globals: true,
     reporters: [
       new CustomReporter({
-        colors: true,
-        end: "Pruebas completadas a las {endTime}. Duración total: {totalTime:blue}s",
+        end: "Tests completed at {endTime}. Total duration: {totalTime:blue}s",
         failure:
-          "¡Hay errores! {failedTests:red}/{totalTests} tests fallidos en {totalTime:yellow}s. " +
-          "Archivos: {failedFiles:red}/{totalFiles} con fallos.",
+          "¡There are errors! {failedTests:red}/{totalTests} tests failed in {totalTime:yellow}s. " +
+          "Files: {failedFiles:red}/{totalFiles} with errors.",
         progress:
-          "{passedTests:green} pasados, {failedTests:red} fallidos, {pendingTests:yellow} pendientes (Tiempo: {elapsedTime}s)",
-        start: "Tests iniciados a las {startTime}",
+          "{passedTests:green} passed, {failedTests:red} failed, {pendingTests:yellow} pending (Time: {elapsedTime}s)",
+        start: "Tests started at {startTime}",
         success:
-          "¡Todo correcto! {passedTests:green}/{totalTests} tests pasados en {totalTime:cyan}s. " +
-          "Archivos: {passedFiles:green}/{totalFiles}.",
+          "¡All tests passed! {passedTests:green}/{totalTests} tests passed in {totalTime:cyan}s. " +
+          "Files: {passedFiles:green}/{totalFiles}.",
       }),
     ],
   },
