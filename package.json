@@ -1,5 +1,5 @@
 {
-  "name": "typescript-library-template-pro",
+  "name": "vitest-text-reporter",
   "version": "0.1.0",
   "description": "A simple, professional, and modern template for building and maintaining TypeScript libraries. This template integrates the best tools, workflows, and practices to help you focus on developing your library without worrying about setup.",
   "type": "module",
@@ -60,13 +60,13 @@
     }
   ],
   "license": "MIT",
-  "homepage": "https://github.com/fvena/typescript-library-template-pro#readme",
+  "homepage": "https://github.com/fvena/vitest-text-reporter#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fvena/typescript-library-template-pro.git"
+    "url": "git+https://github.com/fvena/vitest-text-reporter.git"
   },
   "bugs": {
-    "url": "https://github.com/fvena/typescript-library-template-pro/issues"
+    "url": "https://github.com/fvena/vitest-text-reporter/issues"
   },
   "author": "Francisco Vena <fvena32@gmail.com> (https://www.fvena.com)",
   "engines": {
