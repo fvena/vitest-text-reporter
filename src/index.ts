@@ -1,1 +1,1 @@
-export { add } from "./utils";
+export { default } from "./text-reporter";
