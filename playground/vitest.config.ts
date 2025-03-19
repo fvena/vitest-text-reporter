@@ -19,15 +19,15 @@ export default defineConfig({
     globals: true,
     reporters: [
       new CustomReporter({
-        end: "Tests completed at {endTime}. Total duration: {totalTime:blue}s",
+        end: "Tests completed at {endTime}. Total duration: {duration:blue}s",
         failure:
-          "¡There are errors! {failedTests:red}/{totalTests} tests failed in {totalTime:yellow}s. " +
+          "¡There are errors! {failedTests:red}/{totalTests} tests failed in {duration:yellow}s. " +
           "Files: {failedFiles:red}/{totalFiles} with errors.",
         progress:
-          "{passedTests:green} passed, {failedTests:red} failed, {pendingTests:yellow} pending (Time: {elapsedTime}s)",
-        start: "Tests started at {startTime}",
+          "{passedTests:green} passed, {failedTests:red} failed, {pendingTests:yellow} pending (Time: {duration}s)",
+        start: `Tests started at ${new Date("{{ startTime }}").toISOString()}`,
         success:
-          "¡All tests passed! {passedTests:green}/{totalTests} tests passed in {totalTime:cyan}s. " +
+          "¡All tests passed! {passedTests:green}/{totalTests} tests passed in {duration:cyan}s. " +
           "Files: {passedFiles:green}/{totalFiles}.",
       }),
     ],

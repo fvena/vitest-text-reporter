@@ -75,9 +75,6 @@ export default class TextReporter implements Reporter {
       data.failedTests > 0
         ? Formatter.format(this.templates.failure, data)
         : Formatter.format(this.templates.success, data);
-    console.log(this.templates);
-    console.log(data);
-    console.log(message);
     ConsoleOutput.print(message);
 
     if (this.templates.end) {
@@ -90,7 +87,6 @@ export default class TextReporter implements Reporter {
    * Updates the progress message during test execution
    */
   private updateProgress(cleanLine = true): void {
-    console.log("updateProgress", cleanLine);
     if (cleanLine) ConsoleOutput.clearLine();
     const data = this.tracker.getStats();
     const message = Formatter.format(this.templates.progress, data);

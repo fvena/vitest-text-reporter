@@ -27,14 +27,14 @@ describe("Formatter", () => {
     };
 
     it("should replace simple variables in template", () => {
-      const template = "Tests: {passed} passed, {failed} failed";
+      const template = "Tests: {{ passed }} passed, {{ failed }} failed";
       const data = { ...baseData, failed: 2, passed: 5 };
       const result = Formatter.format(template, data);
       expect(result).toBe("Tests: 5 passed, 2 failed");
     });
 
     it("should replace variables with colors", () => {
-      const template = "Tests: {passed:green} passed, {failed:red} failed";
+      const template = "Tests: {{ passed:green }} passed, {{ failed:red }} failed";
       const data = { ...baseData, failed: 2, passed: 5 };
       const result = Formatter.format(template, data);
       expect(result).toBe(
@@ -43,28 +43,28 @@ describe("Formatter", () => {
     });
 
     it("should keep original placeholder if variable is undefined", () => {
-      const template = "Tests: {passed} passed, {unknown} unknown";
+      const template = "Tests: {{ passed }} passed, {{ unknown }} unknown";
       const data = { ...baseData, passed: 5 };
       const result = Formatter.format(template, data);
-      expect(result).toBe("Tests: 5 passed, {unknown} unknown");
+      expect(result).toBe("Tests: 5 passed, {{ unknown }} unknown");
     });
 
     it("should handle non-string values correctly", () => {
-      const template = "Count: {number}, Boolean: {bool}";
+      const template = "Count: {{ number }}, Boolean: {{ bool }}";
       const data = { ...baseData, bool: "true", number: 42 };
       const result = Formatter.format(template, data);
       expect(result).toBe("Count: 42, Boolean: true");
     });
 
     it("should ignore invalid color names", () => {
-      const template = "Value: {value:invalidcolor}";
+      const template = "Value: {{ value:invalidcolor }}";
       const data = { ...baseData, value: "test" };
       const result = Formatter.format(template, data);
       expect(result).toBe("Value: test");
     });
 
     it("should handle multiple occurrences of the same variable", () => {
-      const template = "{value} and {value} and {value:red}";
+      const template = "{{ value }} and {{ value }} and {{ value:red }}";
       const data = { ...baseData, value: "test" };
       const result = Formatter.format(template, data);
       expect(result).toContain("test and test");
@@ -85,7 +85,7 @@ describe("Formatter", () => {
     });
 
     it("should handle multiple styles with dot notation", () => {
-      const template = "Tests: {passed:bold.green} passed, {failed:underline.red} failed";
+      const template = "Tests: {{ passed:bold.green }} passed, {{ failed:underline.red }} failed";
       const data = { ...baseData, failed: 2, passed: 5 };
       const result = Formatter.format(template, data);
       expect(result).toBe(
@@ -94,7 +94,7 @@ describe("Formatter", () => {
     });
 
     it("should handle multiple styles in different order", () => {
-      const template = "Tests: {passed:green.bold} passed, {failed:red.underline} failed";
+      const template = "Tests: {{ passed:green.bold }} passed, {{ failed:red.underline }} failed";
       const data = { ...baseData, failed: 2, passed: 5 };
       const result = Formatter.format(template, data);
 
@@ -108,7 +108,7 @@ describe("Formatter", () => {
     });
 
     it("should ignore invalid styles in dot notation", () => {
-      const template = "Value: {value:bold.invalidcolor}";
+      const template = "Value: {{ value:bold.invalidcolor }}";
       const data = { ...baseData, value: "test" };
       const result = Formatter.format(template, data);
       expect(result).toBe(`Value: ${boldStart}test${boldEnd}`);

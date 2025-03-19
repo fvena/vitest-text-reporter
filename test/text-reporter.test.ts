@@ -119,7 +119,8 @@ describe("TextReporter", () => {
 
     it("should print custom progress message if template exists", () => {
       const reporter = new TextReporter({
-        progress: "Progress: {passedTests} passed, {failedTests} failed, {pendingTests} pending",
+        progress:
+          "Progress: {{ passedTests }} passed, {{ failedTests }} failed, {{ pendingTests }} pending",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
@@ -156,7 +157,7 @@ describe("TextReporter", () => {
 
     it("should print success message when all tests pass with custom template", () => {
       const reporter = new TextReporter({
-        success: "All tests passed in {duration}s!",
+        success: "All tests passed in {{ duration }}s!",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
@@ -179,7 +180,7 @@ describe("TextReporter", () => {
 
     it("should print failure message when some tests fail with custom template", () => {
       const reporter = new TextReporter({
-        failure: "Some tests failed in {duration}s!",
+        failure: "Some tests failed in {{ duration }}s!",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
@@ -194,7 +195,7 @@ describe("TextReporter", () => {
 
     it("should print end message if template exists", () => {
       const reporter = new TextReporter({
-        end: "End message in {duration}s!",
+        end: "End message in {{ duration }}s!",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
