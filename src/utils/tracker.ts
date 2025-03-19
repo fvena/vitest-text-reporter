@@ -1,11 +1,4 @@
-import type {
-  FileStats,
-  FileStatsResult,
-  TemplateData,
-  TestInfo,
-  TestState,
-  TestStats,
-} from "../types";
+import type { FileStats, TemplateData, TestInfo, TestState, TestStats, TimeData } from "../types";
 
 /**
  * Service class to handle test statistics and state management
@@ -20,6 +13,8 @@ export class Tracker {
    */
   public initStats(): void {
     this.startTime = Date.now();
+    this.tests.clear();
+    this.files.clear();
   }
 
   /**
@@ -27,10 +22,10 @@ export class Tracker {
    */
   public initializeFile(fileId: string, fileName: string): void {
     this.files.set(fileId, {
-      failed: 0,
+      failedTests: 0,
       name: fileName,
-      passed: 0,
-      pending: 0,
+      passedTests: 0,
+      pendingTests: 0,
     });
   }
 
@@ -38,32 +33,54 @@ export class Tracker {
    * Registers a new test for a file
    */
   public registerTest(testId: string, fileId: string): void {
+    const fileStats = this.files.get(fileId);
+
+    if (!fileStats) {
+      throw new Error(`File ${fileId} not found`);
+    }
+
     this.tests.set(testId, {
       fileId,
-      state: "pending",
+      state: "pending", // When a test is registered, it's pending
     });
 
-    const fileStats = this.files.get(fileId);
-    if (fileStats) {
-      fileStats.pending++;
-    }
+    fileStats.pendingTests++;
   }
 
   /**
    * Updates the state of a test and its file's statistics
+   *
+   * IMPORTANT NOTE: This method contains multiple validations to handle a specific
+   * case in the test execution environment: the same test may receive multiple
+   * update calls with the same state. These validations prevent counters from
+   * being incremented or decremented multiple times, which would cause incorrect
+   * statistics.
+   *
+   * The validations ensure that:
+   * 1. We only accept changes to "fail" or "pass" states
+   * 2. We only allow one state change per test (from "pending")
+   * 3. Counters are updated exactly once per test
    */
   public updateTestState(testId: string, newState: TestState): void {
-    const testInfo = this.tests.get(testId);
-    if (!testInfo) return;
+    if (newState !== "fail" && newState !== "pass") return;
 
-    const fileStats = this.files.get(testInfo.fileId);
-    if (!fileStats) return;
+    const testInfo = this.tests.get(testId);
+    if (!testInfo) {
+      throw new Error(`Test ${testId} not found`);
+    }
 
     const oldState = testInfo.state;
+    if (oldState === newState || oldState !== "pending") return;
+
+    const fileStats = this.files.get(testInfo.fileId);
+    if (!fileStats) {
+      throw new Error(`File ${testInfo.fileId} not found`);
+    }
 
     // Update file counters
-    this.decrementCounter(fileStats, oldState);
-    this.incrementCounter(fileStats, newState);
+    if (newState === "fail") fileStats.failedTests++;
+    else fileStats.passedTests++;
+    fileStats.pendingTests--;
 
     // Update test state
     testInfo.state = newState;
@@ -72,48 +89,49 @@ export class Tracker {
   /**
    * Gets the total test statistics
    */
-  public getTestStats(): TestStats {
+  private getTestStats(): TestStats {
+    // Initialize counters for tests
     let passedTests = 0;
     let failedTests = 0;
     let pendingTests = 0;
 
-    for (const fileStats of this.files.values()) {
-      passedTests += fileStats.passed;
-      failedTests += fileStats.failed;
-      pendingTests += fileStats.pending;
+    // Initialize counters for files
+    let passedFiles = 0;
+    let failedFiles = 0;
+    let pendingFiles = 0;
+
+    for (const file of this.files.values()) {
+      passedTests += file.passedTests;
+      failedTests += file.failedTests;
+      pendingTests += file.pendingTests;
+
+      if (file.failedTests > 0) failedFiles++;
+      else if (file.passedTests > 0) passedFiles++;
+      else pendingFiles++;
     }
 
     return {
+      failedFiles,
       failedTests,
+      passedFiles,
       passedTests,
+      pendingFiles,
       pendingTests,
+      totalFiles: this.files.size,
       totalTests: this.tests.size,
     };
   }
 
   /**
-   * Gets the file statistics
+   * Gets the time statistics
    */
-  public getFileStats(): FileStatsResult {
-    let passedFiles = 0;
-    let failedFiles = 0;
-    let pendingFiles = 0;
-
-    for (const stats of this.files.values()) {
-      if (stats.failed > 0) {
-        failedFiles++;
-      } else if (stats.pending > 0) {
-        pendingFiles++;
-      } else {
-        passedFiles++;
-      }
-    }
+  private getTimeStats(): TimeData {
+    const now = Date.now();
 
     return {
-      failedFiles,
-      passedFiles,
-      pendingFiles,
-      totalFiles: this.files.size,
+      duration: Math.round((now - this.startTime) / 1000), // seconds
+      startTime: this.startTime,
+      timestamp: now,
     };
   }
 
@@ -123,51 +141,13 @@ export class Tracker {
   public getStats(end = false): TemplateData {
     const data: TemplateData = {
       ...this.getTestStats(),
-      ...this.getFileStats(),
-      elapsedTime: Math.round((Date.now() - this.startTime) / 1000), // seconds
-      startTime: this.startTime,
-      timestamp: Date.now(),
+      ...this.getTimeStats(),
     };
 
     if (end) {
       data.endTime = Date.now();
-      data.totalTime = Math.round((data.endTime - this.startTime) / 1000); // seconds
     }
 
     return data;
-  }
-
-  private decrementCounter(fileStats: FileStats, state: TestState): void {
-    switch (state) {
-      case "fail": {
-        fileStats.failed--;
-        break;
-      }
-      case "pass": {
-        fileStats.passed--;
-        break;
-      }
-      case "pending": {
-        fileStats.pending--;
-        break;
-      }
-    }
-  }
-
-  private incrementCounter(fileStats: FileStats, state: TestState): void {
-    switch (state) {
-      case "fail": {
-        fileStats.failed++;
-        break;
-      }
-      case "pass": {
-        fileStats.passed++;
-        break;
-      }
-      case "pending": {
-        fileStats.pending++;
-        break;
-      }
-    }
   }
 }

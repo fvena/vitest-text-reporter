@@ -68,7 +68,7 @@ export default defineConfig({
       new TextReporter({
         // Optional configuration
         progress: "{passedTests:green} ✓ passed, {failedTests:red} ✗ failed",
-        success: "{passedTests:green} tests passed in {elapsedTime:cyan}s",
+        success: "{passedTests:green} tests passed in {duration}s",
         // See more options below
       }),
     ],
@@ -81,8 +81,8 @@ export default defineConfig({
 | Option     | Type     | Description                          | Default                                                                                          |
 | ---------- | -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | `progress` | `string` | Template shown during test execution | `{passedTests} passed, {failedTests} failed, {pendingTests} pending (Total tests: {totalTests})` |
-| `success`  | `string` | Template for successful test runs    | `All tests passed in {totalTime}s! Files: {passedFiles}/{totalFiles} passed.`                    |
-| `failure`  | `string` | Template for failed test runs        | `Some tests failed in {totalTime}s! Files: {failedFiles}/{totalFiles} failed.`                   |
+| `success`  | `string` | Template for successful test runs    | `All tests passed in {duration}s! Files: {passedFiles}/{totalFiles} passed.`                     |
+| `failure`  | `string` | Template for failed test runs        | `Some tests failed in {duration}s! Files: {failedFiles}/{totalFiles} failed.`                    |
 | `start`    | `string` | Template shown at start of test run  | `undefined` (nothing shown)                                                                      |
 | `end`      | `string` | Template shown at end of test run    | `undefined` (nothing shown)                                                                      |
 
@@ -106,11 +106,10 @@ You can use the following variables in your templates:
 
 ### Time Information
 
-- `elapsedTime`: Time elapsed since test run started (seconds)
+- `duration`: Time elapsed since test run started (seconds)
 - `startTime`: Timestamp when test run started
 - `endTime`: Timestamp when test run completed (only in `end` template)
 - `timestamp`: Current timestamp
-- `totalTime`: Total time taken for the test run in seconds (only available when tests are completed)
 
 ## 🎨 Color Formatting
 
@@ -120,7 +119,7 @@ Add colors to your variables using the syntax `{variable:color}`. Available colo
 - Text styles: `bold`, `dim`, `italic`, `underline`, `strikethrough`, `hidden`
 - Background colors: `bgBlack`, `bgRed`, `bgGreen`, `bgYellow`, `bgBlue`, `bgMagenta`, `bgCyan`, `bgWhite`
 
-Combine multiple styles with dot notation: `{elapsedTime:bold.green}`, `{failedTests:underline.red}`
+Combine multiple styles with dot notation: `{duration:bold.green}`, `{failedTests:underline.red}`
 
 ## 🧪 Examples
 
@@ -137,7 +136,7 @@ new TextReporter({
 ```ts
 new TextReporter({
   success: [
-    "✅ {passedTests:bold.green}/{totalTests} tests passed in {elapsedTime:blue}s",
+    "✅ {passedTests:bold.green}/{totalTests} tests passed in {duration:blue}s",
     "Files: {passedFiles:green}/{totalFiles}",
     "Started: {startTime}",
   ].join("\n"),
@@ -149,7 +148,7 @@ new TextReporter({
 ```ts
 new TextReporter({
   start: "Running test suite at {timestamp:blue}...",
-  end: "Test suite {failedTests:red|completed:green} at {timestamp} ({elapsedTime:bold}s)",
+  end: "Test suite {failedTests:red|completed:green} at {timestamp} ({duration:bold}s)",
 });
 ```
 

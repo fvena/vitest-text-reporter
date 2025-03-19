@@ -13,7 +13,7 @@ describe("Formatter", () => {
 
   describe("format", () => {
     const baseData: TemplateData = {
-      elapsedTime: 0,
+      duration: 0,
       failedFiles: 0,
       failedTests: 0,
       passedFiles: 0,

@@ -1,46 +1,78 @@
-import type { TestState } from "../../src/types";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Tracker } from "../../src/utils/tracker";
 
 describe("Tracker", () => {
   let tracker: Tracker;
+  let mockDate: number;
 
   beforeEach(() => {
     tracker = new Tracker();
     tracker.initStats();
+
+    // Mock Date.now() for consistent timestamps
+    mockDate = 1_000_000_000_000;
+    vi.spyOn(Date, "now").mockImplementation(() => mockDate);
   });
 
   describe("initStats", () => {
-    it("should initialize start time", () => {
-      const beforeInit = Date.now();
+    it("should clear all stats", () => {
+      // Add some stats
+      tracker.initializeFile("file1", "test.spec.ts");
+
+      // Reset stats
       tracker.initStats();
       const stats = tracker.getStats();
-      expect(stats.startTime).toBeGreaterThanOrEqual(beforeInit);
-      expect(stats.startTime).toBeLessThanOrEqual(Date.now());
+      expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
+        failedTests: 0,
+        passedFiles: 0,
+        passedTests: 0,
+        pendingFiles: 0,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 0,
+        totalTests: 0,
+      });
     });
   });
 
   describe("initializeFile", () => {
     it("should initialize a new file with correct initial stats", () => {
       tracker.initializeFile("file1", "test.spec.ts");
-      const stats = tracker.getFileStats();
+      const stats = tracker.getStats();
       expect(stats).toEqual({
+        duration: 0,
         failedFiles: 0,
-        passedFiles: 1, // No tests registered yet, so it counts as passed
-        pendingFiles: 0,
+        failedTests: 0,
+        passedFiles: 0,
+        passedTests: 0,
+        pendingFiles: 1, // When a file is initialized, it's pending
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
         totalFiles: 1,
+        totalTests: 0,
       });
     });
 
     it("should handle multiple files", () => {
       tracker.initializeFile("file1", "test1.spec.ts");
       tracker.initializeFile("file2", "test2.spec.ts");
-      const stats = tracker.getFileStats();
+      const stats = tracker.getStats();
       expect(stats).toEqual({
+        duration: 0,
         failedFiles: 0,
-        passedFiles: 2,
-        pendingFiles: 0,
+        failedTests: 0,
+        passedFiles: 0,
+        passedTests: 0,
+        pendingFiles: 2,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
         totalFiles: 2,
+        totalTests: 0,
       });
     });
   });
@@ -52,36 +84,45 @@ describe("Tracker", () => {
 
     it("should register a test as pending", () => {
       tracker.registerTest("test1", "file1");
-      const stats = tracker.getTestStats();
+      const stats = tracker.getStats();
       expect(stats).toEqual({
-        failedTests: 0,
-        passedTests: 0,
-        pendingTests: 1,
-        totalTests: 1,
-      });
-    });
-
-    it("should update file stats when registering a test", () => {
-      tracker.registerTest("test1", "file1");
-      const fileStats = tracker.getFileStats();
-      expect(fileStats).toEqual({
+        duration: 0,
         failedFiles: 0,
+        failedTests: 0,
         passedFiles: 0,
+        passedTests: 0,
         pendingFiles: 1,
+        pendingTests: 1,
+        startTime: mockDate,
+        timestamp: mockDate,
         totalFiles: 1,
+        totalTests: 1,
       });
     });
 
     it("should handle multiple tests for the same file", () => {
       tracker.registerTest("test1", "file1");
       tracker.registerTest("test2", "file1");
-      const stats = tracker.getTestStats();
+      const stats = tracker.getStats();
       expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
         failedTests: 0,
+        passedFiles: 0,
         passedTests: 0,
+        pendingFiles: 1,
         pendingTests: 2,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
         totalTests: 2,
       });
+    });
+
+    it("should throw an error if the file ID is not found", () => {
+      expect(() => {
+        tracker.registerTest("test1", "nonexistent");
+      }).toThrow("File nonexistent not found");
     });
   });
 
@@ -91,48 +132,102 @@ describe("Tracker", () => {
       tracker.registerTest("test1", "file1");
     });
 
-    it.each<[TestState, TestState]>([
-      ["pending", "pass"],
-      ["pending", "fail"],
-      ["pass", "fail"],
-      ["fail", "pass"],
-    ])("should update test state from %s to %s", (fromState, toState) => {
-      if (fromState !== "pending") {
-        tracker.updateTestState("test1", fromState);
-      }
-      tracker.updateTestState("test1", toState);
-
-      const stats = tracker.getTestStats();
-      const expectedStats = {
-        failedTests: toState === "fail" ? 1 : 0,
-        passedTests: toState === "pass" ? 1 : 0,
-        pendingTests: toState === "pending" ? 1 : 0,
-        totalTests: 1,
-      };
-      expect(stats).toEqual(expectedStats);
-    });
-
-    it("should handle non-existent test IDs gracefully", () => {
-      tracker.updateTestState("nonexistent", "pass");
-      const stats = tracker.getTestStats();
+    it("should update test state from pending to pass", () => {
+      tracker.updateTestState("test1", "pass");
+      const stats = tracker.getStats();
       expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
         failedTests: 0,
-        passedTests: 0,
-        pendingTests: 1,
+        passedFiles: 1,
+        passedTests: 1,
+        pendingFiles: 0,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
         totalTests: 1,
       });
     });
 
-    it("should handle non-existent file IDs gracefully", () => {
-      tracker.registerTest("test2", "nonexistent");
-      tracker.updateTestState("test2", "pass");
-      const stats = tracker.getTestStats();
+    it("should update test state from pending to fail", () => {
+      tracker.updateTestState("test1", "fail");
+      const stats = tracker.getStats();
       expect(stats).toEqual({
-        failedTests: 0,
+        duration: 0,
+        failedFiles: 1,
+        failedTests: 1,
+        passedFiles: 0,
         passedTests: 0,
-        pendingTests: 1,
-        totalTests: 2,
+        pendingFiles: 0,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
+        totalTests: 1,
       });
+    });
+
+    it("should not update test state if the new state is not 'fail' or 'pass'", () => {
+      tracker.updateTestState("test1", "pending");
+      const stats = tracker.getStats();
+      expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
+        failedTests: 0,
+        passedFiles: 0,
+        passedTests: 0,
+        pendingFiles: 1,
+        pendingTests: 1,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
+        totalTests: 1,
+      });
+    });
+
+    it("should not update test state if the test is not pending", () => {
+      tracker.updateTestState("test1", "pass");
+      tracker.updateTestState("test1", "fail");
+      const stats = tracker.getStats();
+      expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
+        failedTests: 0,
+        passedFiles: 1,
+        passedTests: 1,
+        pendingFiles: 0,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
+        totalTests: 1,
+      });
+    });
+
+    it("should not update test stats if the state is the same", () => {
+      tracker.updateTestState("test1", "pass");
+      tracker.updateTestState("test1", "pass");
+      const stats = tracker.getStats();
+      expect(stats).toEqual({
+        duration: 0,
+        failedFiles: 0,
+        failedTests: 0,
+        passedFiles: 1,
+        passedTests: 1,
+        pendingFiles: 0,
+        pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 1,
+        totalTests: 1,
+      });
+    });
+
+    it("should throw an error if the test ID is not found", () => {
+      expect(() => {
+        tracker.updateTestState("test2", "pass");
+      }).toThrow("Test test2 not found");
     });
   });
 
@@ -150,37 +245,33 @@ describe("Tracker", () => {
       tracker.updateTestState("test2", "fail");
 
       const stats = tracker.getStats();
-      expect(stats).toMatchObject({
+      expect(stats).toEqual({
+        duration: 0,
         failedFiles: 1,
         failedTests: 1,
         passedFiles: 0,
         passedTests: 1,
         pendingFiles: 1,
         pendingTests: 1,
+        startTime: mockDate,
+        timestamp: mockDate,
         totalFiles: 2,
         totalTests: 3,
       });
-      expect(stats.elapsedTime).toBeGreaterThanOrEqual(0);
-      expect(stats.startTime).toBeLessThanOrEqual(Date.now());
-      expect(stats.timestamp).toBeLessThanOrEqual(Date.now());
+      expect(stats.startTime).toBeDefined();
+      expect(stats.timestamp).toBeDefined();
+      expect(stats.duration).toBeGreaterThanOrEqual(0);
     });
 
-    it("should include endTime and totalTime when end parameter is true", () => {
+    it("should include endTime when end parameter is true", () => {
       const stats = tracker.getStats(true);
+
       expect(stats.endTime).toBeDefined();
-      expect(stats.endTime).toBeLessThanOrEqual(Date.now());
-      expect(stats.endTime).toBeGreaterThanOrEqual(stats.startTime);
-      expect(stats.totalTime).toBeDefined();
-      if (stats.endTime === undefined) {
-        throw new Error("endTime should be defined when end parameter is true");
-      }
-      expect(stats.totalTime).toBe(Math.round((stats.endTime - stats.startTime) / 1000));
     });
 
-    it("should not include endTime or totalTime when end parameter is false", () => {
+    it("should not include endTime when end parameter is false", () => {
       const stats = tracker.getStats(false);
       expect(stats.endTime).toBeUndefined();
-      expect(stats.totalTime).toBeUndefined();
     });
   });
 
@@ -197,10 +288,17 @@ describe("Tracker", () => {
       tracker.registerTest("test4", "file2");
 
       // Initial state check
-      expect(tracker.getTestStats()).toEqual({
+      expect(tracker.getStats()).toEqual({
+        duration: 0,
+        failedFiles: 0,
         failedTests: 0,
+        passedFiles: 0,
         passedTests: 0,
+        pendingFiles: 2,
         pendingTests: 4,
+        startTime: mockDate,
+        timestamp: mockDate,
+        totalFiles: 2,
         totalTests: 4,
       });
 
@@ -212,36 +310,20 @@ describe("Tracker", () => {
 
       // Final state check
       const finalStats = tracker.getStats(true);
-      expect(finalStats).toMatchObject({
+      expect(finalStats).toEqual({
+        duration: 0,
+        endTime: mockDate,
         failedFiles: 1,
         failedTests: 1,
         passedFiles: 1,
         passedTests: 3,
         pendingFiles: 0,
         pendingTests: 0,
+        startTime: mockDate,
+        timestamp: mockDate,
         totalFiles: 2,
         totalTests: 4,
       });
-    });
-
-    it("should handle state transitions correctly", () => {
-      tracker.initializeFile("file1", "test.spec.ts");
-      tracker.registerTest("test1", "file1");
-
-      // Pending -> Pass -> Fail -> Pass
-      expect(tracker.getTestStats().pendingTests).toBe(1);
-
-      tracker.updateTestState("test1", "pass");
-      expect(tracker.getTestStats().passedTests).toBe(1);
-      expect(tracker.getTestStats().pendingTests).toBe(0);
-
-      tracker.updateTestState("test1", "fail");
-      expect(tracker.getTestStats().failedTests).toBe(1);
-      expect(tracker.getTestStats().passedTests).toBe(0);
-
-      tracker.updateTestState("test1", "pass");
-      expect(tracker.getTestStats().passedTests).toBe(1);
-      expect(tracker.getTestStats().failedTests).toBe(0);
     });
   });
 });

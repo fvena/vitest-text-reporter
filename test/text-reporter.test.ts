@@ -1,53 +1,17 @@
-import type {
-  TestCase,
-  TestModule,
-  TestResult,
-  TestResultFailed,
-  TestResultPassed,
-} from "vitest/node";
-import type { MockInstance } from "vitest";
 import type { Templates } from "../src/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TextReporter from "../src/text-reporter";
-import { DEFAULT_TEMPLATES } from "../src/constants";
 import ConsoleOutput from "../src/utils/console-output";
-
-// Create a minimal mock that provides just what we need for testing
-const createTestModule = (testCases: TestCase[]): Partial<TestModule> => ({
-  children: {
-    *allTests(
-      state?: "failed" | "passed" | "pending" | "skipped",
-    ): Generator<TestCase, undefined, void> {
-      for (const test of testCases) {
-        if (!state || test.result().state === state) {
-          yield test;
-        }
-      }
-      return undefined;
-    },
-  } as unknown as TestModule["children"],
-  id: "module1",
-  moduleId: "/path/to/test.spec.ts",
-});
+import { DEFAULT_TEMPLATES } from "../src/constants";
+import { createTestCase, createTestModule } from "./test-utilities";
 
 describe("TextReporter", () => {
-  let reporter: TextReporter;
-  let stdout: { write: MockInstance };
   let mockDate: number;
 
   beforeEach(() => {
-    // Mock process.stdout.write
-    stdout = {
-      write: vi.fn(),
-    };
-    vi.stubGlobal("process", { stdout });
-
     // Mock Date.now() for consistent timestamps
     mockDate = 1_000_000_000_000;
     vi.spyOn(Date, "now").mockImplementation(() => mockDate);
-
-    // Create reporter instance
-    reporter = new TextReporter();
 
     // Mock ConsoleOutput to track calls
     vi.spyOn(ConsoleOutput, "print");
@@ -60,191 +24,187 @@ describe("TextReporter", () => {
 
   describe("initialization", () => {
     it("should initialize with default templates", () => {
-      // Access private property for testing
+      const reporter = new TextReporter();
       const templates = (reporter as unknown as { templates: Templates }).templates;
       expect(templates).toEqual(DEFAULT_TEMPLATES);
-    });
-
-    it("should merge custom templates with defaults", () => {
-      const customTemplates = {
-        progress: "Custom progress: {passedTests}/{totalTests}",
-      };
-      reporter = new TextReporter(customTemplates);
-      // Access private property for testing
-      const templates = (reporter as unknown as { templates: Templates }).templates;
-      expect(templates.progress).toBe(customTemplates.progress);
-      expect(templates.success).toBe(DEFAULT_TEMPLATES.success);
     });
   });
 
   describe("onInit", () => {
     it("should initialize stats and print start message if template exists", () => {
-      reporter = new TextReporter({
-        start: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
+      const reporter = new TextReporter({
+        start: "Starting tests...",
       });
       reporter.onInit();
-      expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        expect.stringContaining("0 passed, 0 failed, 0 pending"),
-      );
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("Starting tests...");
+    });
+
+    it("should not print start message if template does not exist", () => {
+      const reporter = new TextReporter();
+      reporter.onInit();
+      expect(ConsoleOutput.print).not.toHaveBeenCalled();
     });
   });
 
   describe("onTestModuleCollected", () => {
     it("should register a test module and its tests", () => {
-      const mockTestCases = [
-        {
-          id: "test1",
-          result: () => ({ state: "pending" }) as TestResult,
-        },
-        {
-          id: "test2",
-          result: () => ({ state: "pending" }) as TestResult,
-        },
-      ];
-
-      reporter = new TextReporter({
-        progress: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
-      });
-      reporter.onTestModuleCollected(createTestModule(mockTestCases as TestCase[]) as TestModule);
-
-      // Verify the module and tests are registered by checking stats
-      reporter.onInit(); // This will trigger stats calculation
-      expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        expect.stringContaining("0 passed, 0 failed, 2 pending"),
+      const reporter = new TextReporter();
+      reporter.onInit();
+      reporter.onTestModuleCollected(
+        createTestModule(["test1", "test2"], "module1", "/path/to/test.spec.ts"),
       );
+      reporter.onTestModuleCollected(
+        createTestModule(["test3", "test4"], "module2", "/path/to/test2.spec.ts"),
+      );
+      reporter.onTestModuleCollected(
+        createTestModule(["test5", "test6"], "module3", "/path/to/test3.spec.ts"),
+      );
+
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 2 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 4 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 6 pending");
     });
   });
 
   describe("onTestCaseResult", () => {
+    let reporter: TextReporter;
+
     beforeEach(() => {
-      // Setup a test module with two tests
-      const mockModule = createTestModule([
-        { id: "test1" } as TestCase,
-        { id: "test2" } as TestCase,
-      ]);
-      reporter.onTestModuleCollected(mockModule as TestModule);
-      vi.clearAllMocks(); // Clear the spies after setup
+      reporter = new TextReporter();
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
     });
 
     it("should update stats when a test passes", () => {
-      const mockTestCase: Partial<TestCase> = {
-        id: "test1",
-        result: () =>
-          ({
-            duration: 0,
-            errors: [],
-            retryCount: 0,
-            state: "passed",
-          }) as TestResultPassed,
-      };
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
 
-      reporter.onTestCaseResult(mockTestCase as TestCase);
-
-      expect(ConsoleOutput.clearLine).toHaveBeenCalled();
-      expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        expect.stringContaining("1 passed, 0 failed, 1 pending"),
-      );
+      expect(ConsoleOutput.clearLine).toHaveBeenCalledTimes(2);
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 2 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("1 passed, 0 failed, 1 pending");
     });
 
     it("should update stats when a test fails", () => {
-      const mockTestCase: Partial<TestCase> = {
-        id: "test1",
-        result: () =>
-          ({
-            duration: 0,
-            errors: [{ message: "Test failed", name: "Error" }],
-            retryCount: 0,
-            state: "failed",
-          }) as TestResultFailed,
-      };
-
-      reporter.onTestCaseResult(mockTestCase as TestCase);
-
-      expect(ConsoleOutput.clearLine).toHaveBeenCalled();
-      expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        expect.stringContaining("0 passed, 1 failed, 1 pending"),
+      reporter.onTestCaseResult(
+        createTestCase("test1", "failed", { message: "Test failed", name: "Error" }),
       );
+
+      expect(ConsoleOutput.clearLine).toHaveBeenCalledTimes(2);
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 2 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 1 failed, 1 pending");
     });
 
-    it("should not update stats for other test states", () => {
-      const mockTestCase: Partial<TestCase> = {
-        id: "test1",
-        result: () =>
-          ({
-            duration: 0,
-            errors: [],
-            retryCount: 0,
-            state: "skipped",
-          }) as unknown as TestResult,
-      };
+    it("should update stats multiple times when multiple tests are updated", () => {
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
+      );
 
-      reporter.onTestCaseResult(mockTestCase as TestCase);
+      expect(ConsoleOutput.clearLine).toHaveBeenCalledTimes(3);
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 2 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("1 passed, 0 failed, 1 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("1 passed, 1 failed, 0 pending");
+    });
 
-      expect(ConsoleOutput.print).not.toHaveBeenCalled();
+    it("should skip tests if the state is not passed or failed", () => {
+      reporter.onTestCaseResult(createTestCase("test1", "skipped"));
+
+      expect(ConsoleOutput.clearLine).toHaveBeenCalledTimes(1);
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("0 passed, 0 failed, 2 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledTimes(1);
+    });
+
+    it("should print custom progress message if template exists", () => {
+      const reporter = new TextReporter({
+        progress: "Progress: {passedTests} passed, {failedTests} failed, {pendingTests} pending",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
+      );
+
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("Progress: 1 passed, 0 failed, 1 pending");
+      expect(ConsoleOutput.print).toHaveBeenCalledWith("Progress: 1 passed, 1 failed, 0 pending");
     });
   });
 
   describe("onTestRunEnd", () => {
+    let reporter: TextReporter;
+
+    beforeEach(() => {
+      reporter = new TextReporter();
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
+    });
+
     it("should print success message when all tests pass", () => {
-      const mockTestCases = [
-        {
-          id: "test1",
-          result: () => ({ state: "passed" }) as TestResultPassed,
-        },
-        {
-          id: "test2",
-          result: () => ({ state: "passed" }) as TestResultPassed,
-        },
-      ];
-
-      reporter = new TextReporter({
-        progress: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
-        success: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
-      });
-      reporter.onTestModuleCollected(createTestModule(mockTestCases as TestCase[]) as TestModule);
-
-      // Update test states
-      for (const test of mockTestCases) {
-        reporter.onTestCaseResult(test as TestCase);
-      }
-
-      vi.clearAllMocks(); // Clear spies before checking final message
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(createTestCase("test2", "passed"));
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith(
-        expect.stringContaining("2 passed, 0 failed, 0 pending"),
-      );
+      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("2 passed in 0s!");
+    });
+
+    it("should print success message when all tests pass with custom template", () => {
+      const reporter = new TextReporter({
+        success: "All tests passed in {duration}s!",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(createTestCase("test2", "passed"));
+      reporter.onTestRunEnd();
+
+      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("All tests passed in 0s!");
     });
 
     it("should print failure message when some tests fail", () => {
-      const mockTestCases = [
-        {
-          id: "test1",
-          result: () => ({ state: "passed" }) as TestResultPassed,
-        },
-        {
-          id: "test2",
-          result: () => ({ state: "failed" }) as TestResultFailed,
-        },
-      ];
-
-      reporter = new TextReporter({
-        failure: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
-        progress: "{passedTests} passed, {failedTests} failed, {pendingTests} pending",
-      });
-      reporter.onTestModuleCollected(createTestModule(mockTestCases as TestCase[]) as TestModule);
-
-      // Update test states
-      for (const test of mockTestCases) {
-        reporter.onTestCaseResult(test as TestCase);
-      }
-
-      vi.clearAllMocks(); // Clear spies before checking final message
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
+      );
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith(
-        expect.stringContaining("1 passed, 1 failed, 0 pending"),
+      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("1 passed, 1 failed in 0s!");
+    });
+
+    it("should print failure message when some tests fail with custom template", () => {
+      const reporter = new TextReporter({
+        failure: "Some tests failed in {duration}s!",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
       );
+      reporter.onTestRunEnd();
+
+      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("Some tests failed in 0s!");
+    });
+
+    it("should print end message if template exists", () => {
+      const reporter = new TextReporter({
+        end: "End message in {duration}s!",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
+      );
+      reporter.onTestRunEnd();
+
+      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("End message in 0s!");
     });
   });
 });

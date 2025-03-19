@@ -6,10 +6,10 @@ export interface TestInfo {
 }
 
 export interface FileStats {
-  failed: number;
+  failedTests: number;
   name: string;
-  passed: number;
-  pending: number;
+  passedTests: number;
+  pendingTests: number;
 }
 
 export interface Templates {
@@ -23,25 +23,21 @@ export interface Templates {
 export type TextReporterOptions = Partial<Templates>;
 
 export interface TestStats {
+  failedFiles: number;
   failedTests: number;
+  passedFiles: number;
   passedTests: number;
+  pendingFiles: number;
   pendingTests: number;
+  totalFiles: number;
   totalTests: number;
 }
 
-export interface FileStatsResult {
-  failedFiles: number;
-  passedFiles: number;
-  pendingFiles: number;
-  totalFiles: number;
-}
-
 export interface TimeData {
-  elapsedTime: number;
+  duration: number;
   endTime?: number;
   startTime: number;
   timestamp: number;
-  totalTime?: number;
 }
 
-export type TemplateData = FileStatsResult & Record<string, number | string> & TestStats & TimeData;
+export type TemplateData = Record<string, number | string> & TestStats & TimeData;
