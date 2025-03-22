@@ -1,6 +1,6 @@
 import { defineConfig } from "vitest/config";
 import swc from "unplugin-swc";
-import CustomReporter from "vitest-text-reporter";
+import TextReporter from "vitest-text-reporter";
 
 export default defineConfig({
   plugins: [
@@ -18,17 +18,19 @@ export default defineConfig({
     environment: "node", // jsdom
     globals: true,
     reporters: [
-      new CustomReporter({
-        end: "Tests completed at {endTime}. Total duration: {duration:blue}s",
-        failure:
-          "¡There are errors! {failedTests:red}/{totalTests} tests failed in {duration:yellow}s. " +
-          "Files: {failedFiles:red}/{totalFiles} with errors.",
-        progress:
-          "{passedTests:green} passed, {failedTests:red} failed, {pendingTests:yellow} pending (Time: {duration}s)",
-        start: `Tests started at ${new Date("{{ startTime }}").toISOString()}`,
-        success:
-          "¡All tests passed! {passedTests:green}/{totalTests} tests passed in {duration:cyan}s. " +
-          "Files: {passedFiles:green}/{totalFiles}.",
+      // new TextReporter({
+      //   end: "${colors.blue(`Tests completed at ${endTime}. Total duration: ${duration}s`)}",
+      //   failure: "${colors.red(`¡There are errors! ${failedTests}/${totalTests} tests failed in ${duration}s. Files: ${failedFiles}/${totalFiles} with errors.`)}",
+      //   progress: "${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending (Time: ${duration}s)",
+      //   start: "${colors.white(`Tests started at ${new Date(startTime).toISOString()}`)}",
+      //   success: "${colors.green(`¡All tests passed! ${passedTests}/${totalTests} tests passed in ${duration}s. Files: ${passedFiles}/${totalFiles}.`)}",
+      // }),
+      new TextReporter({
+        success: [
+          "✅ ${colors.bold(colors.green(`${passedTests}/${totalTests}`))} tests passed in ${colors.blue(duration)}s",
+          "Files: ${colors.green(`${passedFiles}/${totalFiles}`)}",
+          "Started: ${colors.blue(new Date(startTime).toLocaleTimeString())}",
+        ].join("\n"),
       }),
     ],
   },

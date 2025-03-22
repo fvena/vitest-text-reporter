@@ -1,60 +1,41 @@
 import type { TemplateData } from "../types";
-import colors from "yoctocolors";
+import * as yoctocolors from "yoctocolors";
 
 /**
- * Formats a template string by replacing variables with their values and optionally applying colors.
- *
- * Supports:
- * - Simple variables: \{\{ variable \}\}
- * - Variables with color: \{\{ variable:color \}\}
- *
- * @param template - Template string to format
- * @param data - Data to replace variables
- * @returns Formatted string
- *
- * @example
- * format("Tests: \{\{ passed:green \}\} passed, \{\{ failed:red \}\} failed", \{ passed: 5, failed: 2 \})
+ * Formats a text string as a template literal using yoctocolors for terminal styling
+ * @param template - The template string
+ * @param data - The data object to use for variable substitution
+ * @returns The formatted string
  */
 function format(template: string, data: TemplateData): string {
-   
-  return template.replaceAll(
-    /\{\{\s*(\w+)(?::([.\w]+))?\s*\}\}/g,
-    (match, key: string, styles?: string) => {
-      if (data[key] === undefined) {
-        return match;
-      }
+  try {
+    // Ensure data is an object
+    if (typeof data !== "object") {
+      data = {};
+    }
 
-      let value = String(data[key]);
+    // Create a context with the data and colors available
+    const context = {
+      ...data,
+      colors: yoctocolors,
+    };
 
-      if (!styles) {
-        return value;
-      }
+    // Convert object keys to a list of parameters
+    const keys = Object.keys(context);
+    const values = Object.values(context);
 
-      // Apply each style in sequence
-      const styleList = styles.split(".");
-      for (const style of styleList) {
-        if (colorExists(style)) {
-          value = applyColor(value, style);
-        }
-      }
+    // Create a function that will evaluate the template literal
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval -- Explicitly allowed
+    const evaluator = new Function(...keys, `return \`${template}\`;`) as (
+      ...arguments_: unknown[]
+    ) => string;
 
-      return value;
-    },
-  );
-}
-
-/**
- * Checks if a color exists in yoctocolors
- */
-function colorExists(color: string): boolean {
-  return typeof colors[color as keyof typeof colors] === "function";
-}
-
-/**
- * Applies a color using yoctocolors
- */
-function applyColor(text: string, color: string): string {
-  return colors[color as keyof typeof colors](text);
+    // Execute the function with our context values
+    return evaluator(...values);
+  } catch (error) {
+    console.error("Error processing template:", error);
+    return template; // Return original template if there's an error
+  }
 }
 
 export default {

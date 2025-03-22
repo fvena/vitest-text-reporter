@@ -1,5 +1,6 @@
 export const DEFAULT_TEMPLATES = {
-  failure: "{{ passedTests }} passed, {{ failedFiles }} failed in {{ duration }}s!",
-  progress: "{{ passedTests }} passed, {{ failedTests }} failed, {{ pendingTests }} pending",
-  success: "{{ passedTests }} passed in {{ duration }}s!",
+  failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
+  progress:
+    "${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending",
+  success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
 } as const;

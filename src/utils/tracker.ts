@@ -1,4 +1,4 @@
-import type { FileStats, TemplateData, TestInfo, TestState, TestStats, TimeData } from "../types";
+import type { FileStats, TestData, TestInfo, TestState, TestStats, TimeData } from "../types";
 
 /**
  * Service class to handle test statistics and state management
@@ -138,8 +138,8 @@ export class Tracker {
   /**
    * Gets the stats for the current test run
    */
-  public getStats(end = false): TemplateData {
-    const data: TemplateData = {
+  public getStats(end = false): TestData {
+    const data: TestData = {
       ...this.getTestStats(),
       ...this.getTimeStats(),
     };

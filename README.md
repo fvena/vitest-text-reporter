@@ -22,8 +22,8 @@
 <!-- markdownlint-disable MD042 -->
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/fvena/vitest-text-reporter)
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![Build Status](https://github.com/fvena/vitest-text-reporter/workflows/CI%2FCD/badge.svg)]()
+[![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
@@ -68,11 +68,11 @@ export default defineConfig({
       new TextReporter({
         // Optional configuration
         progress:
-          "{{ passedTests }} passed, {{ failedTests }} failed, {{ pendingTests }} pending (Total tests: {{ totalTests }})",
+          "${colors.green(passedTests)} passed, ${colors.red(failedTests)} failed, ${colors.yellow(pendingTests)} pending (Total tests: ${totalTests})",
         success:
-          "All tests passed in {{ duration }}s! Files: {{ passedFiles }}/{{ totalFiles }} passed.",
+          "${colors.green(`All tests passed in ${duration}s! Files: ${passedFiles}/${totalFiles} passed.`)}",
         failure:
-          "Some tests failed in {{ duration }}s! Files: {{ failedFiles }}/{{ totalFiles }} failed.",
+          "${colors.red(`Some tests failed in ${duration}s! Files: ${failedFiles}/${totalFiles} failed.`)}",
       }),
     ],
   },
@@ -81,13 +81,13 @@ export default defineConfig({
 
 ## ⚙️ Configuration Options
 
-| Option     | Type     | Description                          | Default                                                                                                          |
-| ---------- | -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `progress` | `string` | Template shown during test execution | `{{ passedTests }} passed, {{ failedTests }} failed, {{ pendingTests }} pending (Total tests: {{ totalTests }})` |
-| `success`  | `string` | Template for successful test runs    | `All tests passed in {{ duration }}s! Files: {{ passedFiles }}/{{ totalFiles }} passed.`                         |
-| `failure`  | `string` | Template for failed test runs        | `Some tests failed in {{ duration }}s! Files: {{ failedFiles }}/{{ totalFiles }} failed.`                        |
-| `start`    | `string` | Template shown at start of test run  | `undefined` (nothing shown)                                                                                      |
-| `end`      | `string` | Template shown at end of test run    | `undefined` (nothing shown)                                                                                      |
+| Option     | Type     | Description                          | Default                                                                                                                                       |
+| ---------- | -------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `progress` | `string` | Template shown during test execution | `${colors.green(passedTests)} passed, ${colors.red(failedTests)} failed, ${colors.yellow(pendingTests)} pending (Total tests: ${totalTests})` |
+| `success`  | `string` | Template for successful test runs    | `${colors.green(`All tests passed in ${duration}s! Files: ${passedFiles}/${totalFiles} passed.`)}`                                            |
+| `failure`  | `string` | Template for failed test runs        | `${colors.red(`Some tests failed in ${duration}s! Files: ${failedFiles}/${totalFiles} failed.`)}`                                             |
+| `start`    | `string` | Template shown at start of test run  | `undefined` (nothing shown)                                                                                                                   |
+| `end`      | `string` | Template shown at end of test run    | `undefined` (nothing shown)                                                                                                                   |
 
 ## 📋 Template Variables
 
@@ -114,15 +114,29 @@ You can use the following variables in your templates:
 - `endTime`: Timestamp when test run completed (only in `end` template)
 - `timestamp`: Current timestamp
 
-## 🎨 Color Formatting
+## 🧪 Formatting
 
-Add colors to your variables using the syntax `{{ variable:color }}`. Available colors and styles from [yoctocolors](https://github.com/sindresorhus/yoctocolors):
+Templates use JavaScript template literals with access to a `colors` object that provides terminal styling:
+
+```ts
+// For colored text:
+"${colors.red(`Error: ${errorMessage}`)}";
+
+// For bold text:
+"${colors.bold(`Important message: ${message}`)}";
+
+// For background colors:
+"${colors.bgYellow(`Warning: ${warningMessage}`)}";
+
+// For combining styles (nested):
+"${colors.bold(colors.red(`Critical Error: ${errorMessage}`))}";
+```
+
+Available colors and styles from [yoctocolors](https://github.com/sindresorhus/yoctocolors):
 
 - Basic colors: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `gray`
 - Text styles: `bold`, `dim`, `italic`, `underline`, `strikethrough`, `hidden`
 - Background colors: `bgBlack`, `bgRed`, `bgGreen`, `bgYellow`, `bgBlue`, `bgMagenta`, `bgCyan`, `bgWhite`
-
-Combine multiple styles with dot notation: `{{ duration:bold.green }}`, `{{ failedTests:underline.red }}`
 
 ## 🧪 Examples
 
@@ -130,7 +144,8 @@ Combine multiple styles with dot notation: `{{ duration:bold.green }}`, `{{ fail
 
 ```ts
 new TextReporter({
-  progress: "{{ passedTests:green }} ✓ | {{ failedTests:red }} ✗ | {{ pendingTests:yellow }} ?",
+  progress:
+    "${colors.green(passedTests)} ✓ | ${colors.red(failedTests)} ✗ | ${colors.yellow(pendingTests)} ?",
 });
 ```
 
@@ -139,9 +154,9 @@ new TextReporter({
 ```ts
 new TextReporter({
   success: [
-    "✅ {{ passedTests:bold.green }}/{{ totalTests }} tests passed in {{ duration:blue }}s",
-    "Files: {{ passedFiles:green }}/{{ totalFiles }}",
-    "Started: {{ startTime }}",
+    "✅ ${colors.bold(colors.green(`${passedTests}/${totalTests}`))} tests passed in ${colors.blue(duration)}s",
+    "Files: ${colors.green(`${passedFiles}/${totalFiles}`)}",
+    "Started: ${colors.blue(startTime)}",
   ].join("\n"),
 });
 ```
@@ -150,8 +165,8 @@ new TextReporter({
 
 ```ts
 new TextReporter({
-  start: "Running test suite at {{ timestamp:blue }}...",
-  end: "Test suite {{ failedTests:red|completed:green }} at {{ timestamp }} ({{ duration:bold }}s)",
+  start: "Running test suite at ${colors.blue(timestamp)}...",
+  end: "Test suite ${colors.red(failedTests > 0 ? 'failed' : 'completed')} at ${timestamp} (${colors.bold(duration)}s)",
 });
 ```
 

@@ -8,7 +8,7 @@ import Formatter from "./utils/formatter";
 export default class TextReporter implements Reporter {
   private tracker: Tracker;
   private templates: Templates;
-  private cleanLine = true;
+  private cleanLine = false;
   constructor(options?: Partial<TextReporterOptions>) {
     this.tracker = new Tracker();
     this.templates = {
@@ -27,8 +27,7 @@ export default class TextReporter implements Reporter {
     if (this.templates.start) {
       const data = this.tracker.getStats();
       const message = Formatter.format(this.templates.start, data);
-      ConsoleOutput.print(message);
-      this.cleanLine = false; // Don't clean the start message
+      ConsoleOutput.print(message + "\n");
     }
   }
 
@@ -50,6 +49,7 @@ export default class TextReporter implements Reporter {
 
     // Update progress after registering tests
     this.updateProgress(this.cleanLine);
+
     this.cleanLine = true;
   }
 
@@ -71,15 +71,18 @@ export default class TextReporter implements Reporter {
    */
   onTestRunEnd(): void {
     const data = this.tracker.getStats(true);
+
     const message =
       data.failedTests > 0
         ? Formatter.format(this.templates.failure, data)
         : Formatter.format(this.templates.success, data);
-    ConsoleOutput.print(message);
+
+    ConsoleOutput.clearLine();
+    ConsoleOutput.print(message + "\n");
 
     if (this.templates.end) {
       const message = Formatter.format(this.templates.end, data);
-      ConsoleOutput.print(message);
+      ConsoleOutput.print(message + "\n");
     }
   }
 

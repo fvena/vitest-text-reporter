@@ -40,4 +40,5 @@ export interface TimeData {
   timestamp: number;
 }
 
-export type TemplateData = Record<string, number | string> & TestStats & TimeData;
+export type TestData = Record<string, boolean | number | string> & TestStats & TimeData;
+export type TemplateData = Partial<TestData>;
