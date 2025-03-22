@@ -130,6 +130,9 @@ Templates use JavaScript template literals with access to a `colors` object that
 
 // For combining styles (nested):
 "${colors.bold(colors.red(`Critical Error: ${errorMessage}`))}";
+
+// Multiple lines:
+"${colors.green(passedTests)}\n${colors.red(failedTests)}\n${colors.yellow(pendingTests)}";
 ```
 
 Available colors and styles from [yoctocolors](https://github.com/sindresorhus/yoctocolors):

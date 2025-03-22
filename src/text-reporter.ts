@@ -9,12 +9,14 @@ export default class TextReporter implements Reporter {
   private tracker: Tracker;
   private templates: Templates;
   private cleanLine = false;
+  private progressMessageRows = 0;
   constructor(options?: Partial<TextReporterOptions>) {
     this.tracker = new Tracker();
     this.templates = {
       ...DEFAULT_TEMPLATES,
       ...options,
     };
+    this.progressMessageRows = this.templates.progress.split("\n").length;
   }
 
   /**
@@ -77,7 +79,7 @@ export default class TextReporter implements Reporter {
         ? Formatter.format(this.templates.failure, data)
         : Formatter.format(this.templates.success, data);
 
-    ConsoleOutput.clearLine();
+    ConsoleOutput.clearLine(this.progressMessageRows);
     ConsoleOutput.print(message + "\n");
 
     if (this.templates.end) {
@@ -90,7 +92,7 @@ export default class TextReporter implements Reporter {
    * Updates the progress message during test execution
    */
   private updateProgress(cleanLine = true): void {
-    if (cleanLine) ConsoleOutput.clearLine();
+    if (cleanLine) ConsoleOutput.clearLine(this.progressMessageRows);
     const data = this.tracker.getStats();
     const message = Formatter.format(this.templates.progress, data);
     ConsoleOutput.print(message);

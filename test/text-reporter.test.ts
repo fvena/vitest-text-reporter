@@ -297,6 +297,24 @@ describe("TextReporter", () => {
       ]);
     });
 
+    it("should clear progress updates with multiple lines", () => {
+      const reporter = new TextReporter({
+        progress: "passed ${passedTests}\nfailed ${failedTests}\npending ${pendingTests}",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(createTestCase("test2", "passed"));
+
+      expect(consoleCalls).toEqual([
+        { args: ["passed 0\nfailed 0\npending 2"], method: "print" },
+        { args: [], method: "clearLine" },
+        { args: ["passed 1\nfailed 0\npending 1"], method: "print" },
+        { args: [], method: "clearLine" },
+        { args: ["passed 2\nfailed 0\npending 0"], method: "print" },
+      ]);
+    });
+
     it("should clear progress updates when finished", () => {
       const reporter = new TextReporter();
       reporter.onInit();
