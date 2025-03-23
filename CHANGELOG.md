@@ -1,3 +1,9 @@
+# [1.2.0](https://github.com/fvena/vitest-text-reporter/compare/v1.1.0...v1.2.0) (2025-03-23)
+
+### Features
+
+- add clearOnEnd configuration for message clearing behavior in TextReporter ([6f49697](https://github.com/fvena/vitest-text-reporter/commit/6f4969714c0f7bd86d970714dcf32a3fa1bc7061))
+
 # [1.1.0](https://github.com/fvena/vitest-text-reporter/compare/v1.0.0...v1.1.0) (2025-03-23)
 
 ### Features
