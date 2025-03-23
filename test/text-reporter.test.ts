@@ -6,7 +6,9 @@ import { DEFAULT_TEMPLATES } from "../src/constants";
 import { createTestCase, createTestModule } from "./test-utilities";
 
 const expectedProgress = (passed: number, failed: number, pending: number) =>
-  `\u001B[32m${passed.toString()}\u001B[39m passed, \u001B[31m${failed.toString()}\u001B[39m failed, \u001B[33m${pending.toString()}\u001B[39m pending`;
+  `\u001B[32m${passed.toString()} passed\u001B[39m, \u001B[31m${failed.toString()} failed\u001B[39m, \u001B[33m${pending.toString()} pending\u001B[39m\n`;
+
+let spyPrint: ReturnType<typeof vi.spyOn>;
 
 describe("TextReporter", () => {
   let mockDate: number;
@@ -17,8 +19,8 @@ describe("TextReporter", () => {
     vi.spyOn(Date, "now").mockImplementation(() => mockDate);
 
     // Mock ConsoleOutput to track calls
-    vi.spyOn(ConsoleOutput, "print").mockImplementation(() => {
-      /* empty */
+    spyPrint = vi.spyOn(ConsoleOutput, "print").mockImplementation(() => {
+      // ...
     });
     vi.spyOn(ConsoleOutput, "clearLine").mockImplementation(() => {
       /* empty */
@@ -38,7 +40,7 @@ describe("TextReporter", () => {
   });
 
   describe("onInit", () => {
-    it("should initialize stats and print start message if template exists", () => {
+    it("should print start message if template exists", () => {
       const reporter = new TextReporter({
         start: "Starting tests...",
       });
@@ -127,7 +129,7 @@ describe("TextReporter", () => {
     it("should print custom progress message if template exists", () => {
       const reporter = new TextReporter({
         progress:
-          "${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending",
+          "Custom progress message: ${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
@@ -137,10 +139,10 @@ describe("TextReporter", () => {
       );
 
       expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        "\u001B[32m1\u001B[39m passed, \u001B[31m0\u001B[39m failed, \u001B[33m1\u001B[39m pending",
+        "Custom progress message: \u001B[32m1\u001B[39m passed, \u001B[31m0\u001B[39m failed, \u001B[33m1\u001B[39m pending\n",
       );
       expect(ConsoleOutput.print).toHaveBeenCalledWith(
-        "\u001B[32m1\u001B[39m passed, \u001B[31m1\u001B[39m failed, \u001B[33m0\u001B[39m pending",
+        "Custom progress message: \u001B[32m1\u001B[39m passed, \u001B[31m1\u001B[39m failed, \u001B[33m0\u001B[39m pending\n",
       );
     });
   });
@@ -158,15 +160,31 @@ describe("TextReporter", () => {
       vi.clearAllMocks();
     });
 
-    it("should print success message when all tests pass", () => {
+    it("should not print success message when template is not provided", () => {
       reporter.onTestCaseResult(createTestCase("test1", "passed"));
       reporter.onTestCaseResult(createTestCase("test2", "passed"));
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("\u001B[32m2 passed in 0s!\u001B[39m\n");
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual(expectedProgress(2, 0, 0));
     });
 
-    it("should print success message when all tests pass with custom template", () => {
+    it("should not print failure message when template is not provided", () => {
+      reporter.onTestCaseResult(createTestCase("test1", "failed"));
+      reporter.onTestCaseResult(createTestCase("test2", "failed"));
+      reporter.onTestRunEnd();
+
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual(expectedProgress(0, 2, 0));
+    });
+
+    it("should not print end message when template is not provided", () => {
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(createTestCase("test2", "passed"));
+      reporter.onTestRunEnd();
+
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual(expectedProgress(2, 0, 0));
+    });
+
+    it("should print success message when template is provided", () => {
       const reporter = new TextReporter({
         success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
       });
@@ -176,22 +194,10 @@ describe("TextReporter", () => {
       reporter.onTestCaseResult(createTestCase("test2", "passed"));
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith("\u001B[32m2 passed in 0s!\u001B[39m\n");
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual("\u001B[32m2 passed in 0s!\u001B[39m\n");
     });
 
-    it("should print failure message when some tests fail", () => {
-      reporter.onTestCaseResult(createTestCase("test1", "passed"));
-      reporter.onTestCaseResult(
-        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
-      );
-      reporter.onTestRunEnd();
-
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith(
-        "\u001B[31m1 passed, 1 failed in 0s!\u001B[39m\n",
-      );
-    });
-
-    it("should print failure message when some tests fail with custom template", () => {
+    it("should print failure message when template is provided", () => {
       const reporter = new TextReporter({
         failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
       });
@@ -203,14 +209,29 @@ describe("TextReporter", () => {
       );
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith(
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual(
         "\u001B[31m1 passed, 1 failed in 0s!\u001B[39m\n",
       );
     });
 
-    it("should print end message if template exists", () => {
+    it("should print end message when success and failure templates are provided", () => {
       const reporter = new TextReporter({
-        end: "${colors.green(`End message in ${duration}s!`)}",
+        end: "${colors.blue(`End message in ${duration}s!`)}",
+        failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
+        success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(createTestCase("test2", "passed"));
+      reporter.onTestRunEnd();
+
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual("\u001B[34mEnd message in 0s!\u001B[39m\n");
+    });
+
+    it("should print end message when not success or failure template is provided", () => {
+      const reporter = new TextReporter({
+        end: "${colors.blue(`End message in ${duration}s!`)}",
       });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
@@ -220,9 +241,40 @@ describe("TextReporter", () => {
       );
       reporter.onTestRunEnd();
 
-      expect(ConsoleOutput.print).toHaveBeenLastCalledWith(
-        "\u001B[32mEnd message in 0s!\u001B[39m\n",
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual("\u001B[34mEnd message in 0s!\u001B[39m\n");
+    });
+
+    it("should print both success and end message when both templates are provided", () => {
+      const reporter = new TextReporter({
+        end: "${colors.blue(`End message in ${duration}s!`)}",
+        success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestRunEnd();
+
+      expect(spyPrint.mock.calls.at(-3)?.[0]).toEqual("\u001B[32m1 passed in 0s!\u001B[39m\n");
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual("\u001B[34mEnd message in 0s!\u001B[39m\n");
+    });
+
+    it("should print both failure and end message when both templates are provided", () => {
+      const reporter = new TextReporter({
+        end: "${colors.blue(`End message in ${duration}s!`)}",
+        failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
+      });
+      reporter.onInit();
+      reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
+      reporter.onTestCaseResult(createTestCase("test1", "passed"));
+      reporter.onTestCaseResult(
+        createTestCase("test2", "failed", { message: "Test failed", name: "Error" }),
       );
+      reporter.onTestRunEnd();
+
+      expect(spyPrint.mock.calls.at(-3)?.[0]).toEqual(
+        "\u001B[31m1 passed, 1 failed in 0s!\u001B[39m\n",
+      );
+      expect(spyPrint.mock.calls.at(-2)?.[0]).toEqual("\u001B[34mEnd message in 0s!\u001B[39m\n");
     });
   });
 
@@ -242,7 +294,7 @@ describe("TextReporter", () => {
         end: "End of tests",
         failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
         progress:
-          "${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending",
+          "${colors.green(`${passedTests} passed`)}, ${colors.red(`${failedTests} failed`)}, ${colors.yellow(`${pendingTests} pending`)}",
         start: "Starting tests...",
         success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
       });
@@ -307,16 +359,19 @@ describe("TextReporter", () => {
       reporter.onTestCaseResult(createTestCase("test2", "passed"));
 
       expect(consoleCalls).toEqual([
-        { args: ["passed 0\nfailed 0\npending 2"], method: "print" },
+        { args: ["passed 0\nfailed 0\npending 2\n"], method: "print" },
         { args: [], method: "clearLine" },
-        { args: ["passed 1\nfailed 0\npending 1"], method: "print" },
+        { args: ["passed 1\nfailed 0\npending 1\n"], method: "print" },
         { args: [], method: "clearLine" },
-        { args: ["passed 2\nfailed 0\npending 0"], method: "print" },
+        { args: ["passed 2\nfailed 0\npending 0\n"], method: "print" },
       ]);
     });
 
     it("should clear progress updates when finished", () => {
-      const reporter = new TextReporter();
+      const reporter = new TextReporter({
+        failure: "${colors.red(`${passedTests} passed, ${failedTests} failed in ${duration}s!`)}",
+        success: "${colors.green(`${passedTests} passed in ${duration}s!`)}",
+      });
       reporter.onInit();
       reporter.onTestModuleCollected(createTestModule(["test1", "test2"]));
       reporter.onTestCaseResult(createTestCase("test1", "passed"));
@@ -331,6 +386,7 @@ describe("TextReporter", () => {
         { args: [expectedProgress(2, 0, 0)], method: "print" },
         { args: [], method: "clearLine" },
         { args: ["\u001B[32m2 passed in 0s!\u001B[39m\n"], method: "print" },
+        { args: ["\n"], method: "print" },
       ]);
     });
 
@@ -340,10 +396,11 @@ describe("TextReporter", () => {
       reporter.onTestCaseResult(createTestCase("test1", "passed"));
       reporter.onTestRunEnd();
 
-      const lastCalls = consoleCalls.slice(-2);
+      const lastCalls = consoleCalls.slice(-3);
       expect(lastCalls).toEqual([
         { args: ["\u001B[32m1 passed in 0s!\u001B[39m\n"], method: "print" },
         { args: ["End of tests\n"], method: "print" },
+        { args: ["\n"], method: "print" },
       ]);
     });
 
@@ -377,6 +434,7 @@ describe("TextReporter", () => {
         { args: [], method: "clearLine" },
         { args: ["\u001B[32m4 passed in 0s!\u001B[39m\n"], method: "print" },
         { args: ["End of tests\n"], method: "print" },
+        { args: ["\n"], method: "print" },
       ]);
     });
   });

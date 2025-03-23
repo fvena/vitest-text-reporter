@@ -14,10 +14,10 @@ export interface FileStats {
 
 export interface Templates {
   end?: string;
-  failure: string;
+  failure?: string;
   progress: string;
   start?: string;
-  success: string;
+  success?: string;
 }
 
 export type TextReporterOptions = Partial<Templates>;

@@ -16,7 +16,7 @@ export default class TextReporter implements Reporter {
       ...DEFAULT_TEMPLATES,
       ...options,
     };
-    this.progressMessageRows = this.templates.progress.split("\n").length;
+    this.progressMessageRows = this.templates.progress.split("\n").length + 1;
   }
 
   /**
@@ -26,6 +26,7 @@ export default class TextReporter implements Reporter {
   onInit(): void {
     this.tracker.initStats();
 
+    // Print start message if a start template is provided
     if (this.templates.start) {
       const data = this.tracker.getStats();
       const message = Formatter.format(this.templates.start, data);
@@ -74,18 +75,27 @@ export default class TextReporter implements Reporter {
   onTestRunEnd(): void {
     const data = this.tracker.getStats(true);
 
-    const message =
-      data.failedTests > 0
-        ? Formatter.format(this.templates.failure, data)
-        : Formatter.format(this.templates.success, data);
+    // Print failure message if there are failed tests and a failure template is provided
+    if (data.failedTests > 0 && this.templates.failure) {
+      const message = Formatter.format(this.templates.failure, data);
+      ConsoleOutput.clearLine(this.progressMessageRows);
+      ConsoleOutput.print(message + "\n");
+    }
 
-    ConsoleOutput.clearLine(this.progressMessageRows);
-    ConsoleOutput.print(message + "\n");
+    // Print success message if there are no failed tests and a success template is provided
+    if (data.failedTests === 0 && this.templates.success) {
+      const message = Formatter.format(this.templates.success, data);
+      ConsoleOutput.clearLine(this.progressMessageRows);
+      ConsoleOutput.print(message + "\n");
+    }
 
+    // Print end message if a end template is provided
     if (this.templates.end) {
       const message = Formatter.format(this.templates.end, data);
       ConsoleOutput.print(message + "\n");
     }
+
+    ConsoleOutput.print("\n");
   }
 
   /**
@@ -95,6 +105,6 @@ export default class TextReporter implements Reporter {
     if (cleanLine) ConsoleOutput.clearLine(this.progressMessageRows);
     const data = this.tracker.getStats();
     const message = Formatter.format(this.templates.progress, data);
-    ConsoleOutput.print(message);
+    ConsoleOutput.print(message + "\n");
   }
 }

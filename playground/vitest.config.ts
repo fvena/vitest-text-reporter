@@ -18,19 +18,18 @@ export default defineConfig({
     environment: "node", // jsdom
     globals: true,
     reporters: [
-      // new TextReporter({
-      //   end: "${colors.blue(`Tests completed at ${endTime}. Total duration: ${duration}s`)}",
-      //   failure: "${colors.red(`¡There are errors! ${failedTests}/${totalTests} tests failed in ${duration}s. Files: ${failedFiles}/${totalFiles} with errors.`)}",
-      //   progress: "${colors.green(`${passedTests}`)} passed, ${colors.red(`${failedTests}`)} failed, ${colors.yellow(`${pendingTests}`)} pending (Time: ${duration}s)",
-      //   start: "${colors.white(`Tests started at ${new Date(startTime).toISOString()}`)}",
-      //   success: "${colors.green(`¡All tests passed! ${passedTests}/${totalTests} tests passed in ${duration}s. Files: ${passedFiles}/${totalFiles}.`)}",
-      // }),
       new TextReporter({
-        success: [
-          "✅ ${colors.bold(colors.green(`${passedTests}/${totalTests}`))} tests passed in ${colors.blue(duration)}s",
-          "Files: ${colors.green(`${passedFiles}/${totalFiles}`)}",
-          "Started: ${colors.blue(new Date(startTime).toLocaleTimeString())}",
+        end: "${colors.blue(`Tests completed at ${new Date(endTime).toLocaleTimeString()}`)}",
+        failure:
+          "${colors.red(`¡There are errors! ${failedTests}/${totalTests} tests failed in ${duration}s. Files: ${failedFiles}/${totalFiles} with errors.`)}",
+        progress: [
+          "${colors.gray(`Test Files  ${colors.bold(colors.green(passedFiles + ' passed'))} (${totalFiles})`)}",
+          "${colors.gray(`     Tests  ${colors.bold(colors.green(passedTests + ' passed'))} (${totalTests})`)}",
+          "${colors.gray(`  Duration  ${colors.white(duration + 's')}`)}",
         ].join("\n"),
+        start: "${colors.white(`Tests started at ${new Date(startTime).toLocaleTimeString()}`)}",
+        success:
+          "${colors.green(`¡All tests passed! ${passedTests}/${totalTests} tests passed in ${duration}s. Files: ${passedFiles}/${totalFiles}.`)}",
       }),
     ],
   },
