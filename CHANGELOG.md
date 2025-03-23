@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/fvena/vitest-text-reporter/compare/v1.0.0...v1.1.0) (2025-03-23)
+
+### Features
+
+- support multi-line templates for progress ([0ae83e3](https://github.com/fvena/vitest-text-reporter/commit/0ae83e368c9a3b2396c28a099ca34c054695d1b0))
+
 # 1.0.0 (2025-03-23)
 
 ### Features
