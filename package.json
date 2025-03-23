@@ -31,9 +31,6 @@
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
     "semantic-release": "semantic-release",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
     "playground": "npm run dev --workspace=playground",
     "size": "size-limit"
   },
@@ -91,7 +88,6 @@
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
     "unplugin-swc": "^1.5.1",
-    "vitepress": "^0.1.1",
     "vitest": "^3.0.9"
   },
   "dependencies": {
