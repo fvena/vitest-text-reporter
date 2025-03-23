@@ -10,6 +10,8 @@ export default class TextReporter implements Reporter {
   private templates: Templates;
   private cleanLine = false;
   private progressMessageRows = 0;
+  private startMessageRows = 0;
+
   constructor(options?: Partial<TextReporterOptions>) {
     this.tracker = new Tracker();
     this.templates = {
@@ -17,6 +19,7 @@ export default class TextReporter implements Reporter {
       ...options,
     };
     this.progressMessageRows = this.templates.progress.split("\n").length + 1;
+    this.startMessageRows = this.templates.start?.split("\n").length ?? 0;
   }
 
   /**
@@ -75,17 +78,32 @@ export default class TextReporter implements Reporter {
   onTestRunEnd(): void {
     const data = this.tracker.getStats(true);
 
+    // Calculate rows to clear based on clearOnEnd mode
+    let rowsToClear = 0;
+    if (
+      this.templates.clearOnEnd === "progress" ||
+      this.templates.clearOnEnd === "progress-start"
+    ) {
+      rowsToClear += this.progressMessageRows;
+    }
+    if (this.templates.clearOnEnd === "progress-start") {
+      rowsToClear += this.startMessageRows;
+    }
+
+    // Clear messages if configured
+    if (rowsToClear > 0) {
+      ConsoleOutput.clearLine(rowsToClear);
+    }
+
     // Print failure message if there are failed tests and a failure template is provided
     if (data.failedTests > 0 && this.templates.failure) {
       const message = Formatter.format(this.templates.failure, data);
-      ConsoleOutput.clearLine(this.progressMessageRows);
       ConsoleOutput.print(message + "\n");
     }
 
     // Print success message if there are no failed tests and a success template is provided
     if (data.failedTests === 0 && this.templates.success) {
       const message = Formatter.format(this.templates.success, data);
-      ConsoleOutput.clearLine(this.progressMessageRows);
       ConsoleOutput.print(message + "\n");
     }
 

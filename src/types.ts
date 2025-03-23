@@ -12,7 +12,10 @@ export interface FileStats {
   pendingTests: number;
 }
 
+export type ClearMode = "none" | "progress" | "progress-start";
+
 export interface Templates {
+  clearOnEnd?: ClearMode;
   end?: string;
   failure?: string;
   progress: string;

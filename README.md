@@ -81,13 +81,14 @@ export default defineConfig({
 
 ## ⚙️ Configuration Options
 
-| Option     | Type     | Description                          | Default                                                                                                                                       |
-| ---------- | -------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `progress` | `string` | Template shown during test execution | `${colors.green(passedTests)} passed, ${colors.red(failedTests)} failed, ${colors.yellow(pendingTests)} pending (Total tests: ${totalTests})` |
-| `success`  | `string` | Template for successful test runs    | `${colors.green(`All tests passed in ${duration}s! Files: ${passedFiles}/${totalFiles} passed.`)}`                                            |
-| `failure`  | `string` | Template for failed test runs        | `${colors.red(`Some tests failed in ${duration}s! Files: ${failedFiles}/${totalFiles} failed.`)}`                                             |
-| `start`    | `string` | Template shown at start of test run  | `undefined` (nothing shown)                                                                                                                   |
-| `end`      | `string` | Template shown at end of test run    | `undefined` (nothing shown)                                                                                                                   |
+| Option       | Type     | Description                                                                                                                                                                                                   | Default                                                                                                                                       |
+| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `progress`   | `string` | Template shown during test execution                                                                                                                                                                          | `${colors.green(passedTests)} passed, ${colors.red(failedTests)} failed, ${colors.yellow(pendingTests)} pending (Total tests: ${totalTests})` |
+| `success`    | `string` | Template for successful test runs                                                                                                                                                                             | `${colors.green(`All tests passed in ${duration}s! Files: ${passedFiles}/${totalFiles} passed.`)}`                                            |
+| `failure`    | `string` | Template for failed test runs                                                                                                                                                                                 | `${colors.red(`Some tests failed in ${duration}s! Files: ${failedFiles}/${totalFiles} failed.`)}`                                             |
+| `start`      | `string` | Template shown at start of test run                                                                                                                                                                           | `undefined` (nothing shown)                                                                                                                   |
+| `end`        | `string` | Template shown at end of test run                                                                                                                                                                             | `undefined` (nothing shown)                                                                                                                   |
+| `clearOnEnd` | `string` | Controls which messages to clear when tests finish. Options:<br>- `'none'`: Keep all messages<br>- `'progress'`: Clear only progress messages<br>- `'progress-start'`: Clear both progress and start messages | `'progress'`                                                                                                                                  |
 
 ## 📋 Template Variables
 
@@ -170,6 +171,25 @@ new TextReporter({
 new TextReporter({
   start: "Running test suite at ${colors.blue(timestamp)}...",
   end: "Test suite ${colors.red(failedTests > 0 ? 'failed' : 'completed')} at ${timestamp} (${colors.bold(duration)}s)",
+});
+```
+
+### Custom Message Clearing Behavior
+
+```ts
+new TextReporter({
+  start: "Running test suite at ${colors.blue(timestamp)}...",
+  progress:
+    "${colors.green(passedTests)} ✓ | ${colors.red(failedTests)} ✗ | ${colors.yellow(pendingTests)} ?",
+  clearOnEnd: "none", // Keep all messages visible after tests finish
+});
+
+// Or to clear everything at the end:
+new TextReporter({
+  start: "Running test suite at ${colors.blue(timestamp)}...",
+  progress:
+    "${colors.green(passedTests)} ✓ | ${colors.red(failedTests)} ✗ | ${colors.yellow(pendingTests)} ?",
+  clearOnEnd: "progress-start", // Clear both progress and start messages when tests finish
 });
 ```
 

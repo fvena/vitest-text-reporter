@@ -19,6 +19,7 @@ export default defineConfig({
     globals: true,
     reporters: [
       new TextReporter({
+        clearOnEnd: "none",
         end: "${colors.blue(`Tests completed at ${new Date(endTime).toLocaleTimeString()}`)}",
         failure:
           "${colors.red(`¡There are errors! ${failedTests}/${totalTests} tests failed in ${duration}s. Files: ${failedFiles}/${totalFiles} with errors.`)}",

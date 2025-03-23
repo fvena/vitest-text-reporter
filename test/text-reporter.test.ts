@@ -437,5 +437,147 @@ describe("TextReporter", () => {
         { args: ["\n"], method: "print" },
       ]);
     });
+
+    describe("message clearing configuration", () => {
+      it("should clear progress message by default when tests end", () => {
+        const reporter = new TextReporter({
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls).toEqual([
+          { args: ["Starting tests...\n"], method: "print" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["Running tests: 1 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["\n"], method: "print" },
+        ]);
+      });
+
+      it("should keep all messages when clearOnEnd is 'none'", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "none",
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls).toEqual([
+          { args: ["Starting tests...\n"], method: "print" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["Running tests: 1 passed\n"], method: "print" },
+          { args: ["\n"], method: "print" },
+        ]);
+      });
+
+      it("should only clear progress message when clearOnEnd is 'progress'", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "progress",
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls[0]).toEqual({ args: ["Starting tests...\n"], method: "print" });
+        expect(consoleCalls.filter((call) => call.method === "clearLine").length).toBe(2);
+      });
+
+      it("should clear both start and progress messages when clearOnEnd is 'progress-start'", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "progress-start",
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls).toEqual([
+          { args: ["Starting tests...\n"], method: "print" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["Running tests: 1 passed\n"], method: "print" },
+          { args: [], method: "clearLine" }, // Clears both start and progress
+          { args: ["\n"], method: "print" },
+        ]);
+      });
+
+      it("should handle multiline start and progress messages when clearing", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "progress-start",
+          progress: "Running tests:\n${passedTests} passed\n${failedTests} failed",
+          start: "Starting tests...\nPreparing environment...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        // Verify that the correct number of lines are cleared
+        const clearLineCalls = consoleCalls.filter((call) => call.method === "clearLine");
+        expect(clearLineCalls.length).toBe(2); // One for progress update, one for final clear
+      });
+
+      it("should handle success message with message clearing configuration", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "progress-start",
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+          success: "All tests passed!",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(createTestCase("test1", "passed"));
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls).toEqual([
+          { args: ["Starting tests...\n"], method: "print" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["Running tests: 1 passed\n"], method: "print" },
+          { args: [], method: "clearLine" }, // Clears both start and progress
+          { args: ["All tests passed!\n"], method: "print" },
+          { args: ["\n"], method: "print" },
+        ]);
+      });
+
+      it("should handle failure message with message clearing configuration", () => {
+        const reporter = new TextReporter({
+          clearOnEnd: "progress-start",
+          failure: "Tests failed!",
+          progress: "Running tests: ${passedTests} passed",
+          start: "Starting tests...",
+        });
+        reporter.onInit();
+        reporter.onTestModuleCollected(createTestModule(["test1"]));
+        reporter.onTestCaseResult(
+          createTestCase("test1", "failed", { message: "Test failed", name: "Error" }),
+        );
+        reporter.onTestRunEnd();
+
+        expect(consoleCalls).toEqual([
+          { args: ["Starting tests...\n"], method: "print" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" },
+          { args: ["Running tests: 0 passed\n"], method: "print" },
+          { args: [], method: "clearLine" }, // Clears both start and progress
+          { args: ["Tests failed!\n"], method: "print" },
+          { args: ["\n"], method: "print" },
+        ]);
+      });
+    });
   });
 });
