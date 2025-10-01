@@ -91,6 +91,6 @@
     "vitest": "^3.0.9"
   },
   "dependencies": {
-    "yoctocolors": "^2.1.1"
+    "yoctocolors": "^2.1.2"
   }
 }
